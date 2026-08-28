@@ -25,6 +25,26 @@ Check the box when a milestone is fully working end-to-end (not just started).
 
 ## Session Log
 
+### Session 12 (continued 5) — 2026-08-29 — v1.0.1: fixed a 100%-reproducible launch crash
+User report: "app opens then closes immediately." This was real, and affected **every fresh install** of v1.0.0.
+
+**Root cause**, found from a real device's logcat: `SeedCallback.onCreate()` — the code path a brand-new install uses to seed its first data — inserted into `app_preferences` without listing the two newest columns (`waterReminderEnabled`, `waterReminderIntervalMinutes`, added right at the end of the previous session for the interval water reminder). Both are `NOT NULL` with no SQL-level default, so the INSERT was rejected by SQLite outright: `SQLITE_CONSTRAINT_NOTNULL`. Every migration was fine — this was purely a fresh-install-path bug, structurally separate from the migration chain.
+
+**How this got diagnosed and fixed:**
+1. Statically ruled out two hypotheses first: replayed the *entire* v1→v6 migration chain against real SQLite, built from Room's own exported schema at each version — zero mismatches. Confirmed Glance's classes are genuinely present in the built APK's dex. Both clean.
+2. The user connected a physical Android device over USB mid-conversation — **the first real device this entire project has ever had access to.** Once authorized, `adb logcat -d | grep -A 40 FATAL` pointed at the exact line in one read.
+3. Fixed `SeedCallback`'s INSERT to include both columns with the same defaults the migration uses (0/60).
+
+**Verified for real, not just compiled:**
+- Clean install on the connected device (`adb uninstall` + `adb install` + `adb shell am start`) — app launches and stays running. No crash.
+- Tapped Settings' "Send a test notification now" **on the real device** — a genuine notification appeared in the shade: `"LifeTrack — Today's check-in — 0 of 2000 kcal logged"`, on the `lifetrack_daily_digest` channel. This is the first time any part of this app has been confirmed working by watching it run, rather than by compiling or unit-testing pure logic.
+- Bonus, found by an accidental tap: the backup export's file-picker (Storage Access Framework `CreateDocument`) also opened correctly on the real device.
+- `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, zero warnings, 82/82 tests still pass.
+- Shipped as **v1.0.1** (versionCode 2, versionName "1.0.1") — v1.0.0's crash meant it never had a working install, so this is a genuine patch release, not a cosmetic bump.
+
+**Still not verified on the real device:** the home screen widget itself (an attempt to navigate the launcher's widget picker via blind `adb shell input tap` landed in an unrelated app instead — stopped rather than keep guessing at launcher coordinates on the user's actual phone). The interval water reminder's actual periodic firing (only the one-shot digest test button was exercised). Both are still "should work, confirmed only by code review and the underlying API's verified shape," same caveat as before — just narrower than it was.
+
+
 ### Session 12 (continued 4) — 2026-08-29
 Full backup/restore, by request — "if I update the application and data erases I can just import the exported data and everything is back as it was."
 

@@ -127,13 +127,21 @@ abstract class LifeTrackDatabase : RoomDatabase() {
                 )
                 db.execSQL(
                     "INSERT INTO app_preferences " +
-                        "(id, themeMode, waterIncrementSmallMl, waterIncrementLargeMl) " +
-                        "VALUES (?, ?, ?, ?)",
+                        "(id, themeMode, waterIncrementSmallMl, waterIncrementLargeMl, " +
+                        "waterReminderEnabled, waterReminderIntervalMinutes) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)",
                     arrayOf<Any>(
                         AppPreferences.SINGLETON_ID,
                         ThemeMode.SYSTEM.name,
                         AppPreferences.DEFAULT_SMALL_ML,
                         AppPreferences.DEFAULT_LARGE_ML,
+                        // NOT NULL with no SQL-level default (a Kotlin default value like
+                        // `= false` is not a SQL DEFAULT clause) — omitting either of
+                        // these on a fresh install crashes with SQLITE_CONSTRAINT_NOTNULL.
+                        // displayName/currencyLocaleTag are nullable and safe to omit;
+                        // these two are not. See MEMORY.md.
+                        0, // waterReminderEnabled = false
+                        AppPreferences.DEFAULT_WATER_REMINDER_MINUTES,
                     ),
                 )
                 DEFAULT_REMINDERS.forEach { (feature, time) ->
