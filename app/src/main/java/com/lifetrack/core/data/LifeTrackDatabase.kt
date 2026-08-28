@@ -20,6 +20,7 @@ import com.lifetrack.habit.data.Habit
 import com.lifetrack.habit.data.HabitDao
 import com.lifetrack.habit.data.HabitLog
 import com.lifetrack.notification.data.NotificationSettings
+import com.lifetrack.period.data.PeriodLog
 import com.lifetrack.notification.data.NotificationSettingsDao
 import com.lifetrack.water.data.WaterDao
 import com.lifetrack.water.data.WaterGoal
@@ -42,8 +43,9 @@ import com.lifetrack.water.data.WaterLog
         DiaryEntry::class,
         NotificationSettings::class,
         AppPreferences::class,
+        PeriodLog::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -57,6 +59,7 @@ abstract class LifeTrackDatabase : RoomDatabase() {
     abstract fun diaryDao(): DiaryDao
     abstract fun notificationSettingsDao(): NotificationSettingsDao
     abstract fun appPreferencesDao(): AppPreferencesDao
+    abstract fun periodDao(): com.lifetrack.period.data.PeriodDao
 
     companion object {
         const val DATABASE_NAME = "lifetrack.db"
@@ -72,7 +75,7 @@ abstract class LifeTrackDatabase : RoomDatabase() {
         private fun build(context: Context): LifeTrackDatabase =
             Room.databaseBuilder(context, LifeTrackDatabase::class.java, DATABASE_NAME)
                 .addCallback(SeedCallback)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
 
         /**
@@ -149,6 +152,22 @@ abstract class LifeTrackDatabase : RoomDatabase() {
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE app_preferences ADD COLUMN displayName TEXT")
+            }
+        }
+
+        /**
+         * v3 -> v4: adds `period_logs` for the period tracker. Both statements copied
+         * verbatim from the exported v4 schema (app/schemas/.../4.json) — the table's
+         * createSql and its unique index on startDate — per the procedure in MEMORY.md.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `period_logs` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT)",
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_period_logs_startDate` ON `period_logs` (`startDate`)",
+                )
             }
         }
 

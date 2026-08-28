@@ -11,6 +11,7 @@ import com.lifetrack.diary.viewmodel.DiaryViewModel
 import com.lifetrack.settings.viewmodel.SettingsViewModel
 import com.lifetrack.expense.viewmodel.ExpenseViewModel
 import com.lifetrack.goal.viewmodel.GoalViewModel
+import com.lifetrack.period.viewmodel.PeriodViewModel
 import com.lifetrack.habit.viewmodel.HabitViewModel
 import com.lifetrack.water.viewmodel.WaterViewModel
 
@@ -26,6 +27,7 @@ object AppViewModelProvider {
                 waterRepository = lifeTrackApplication().container.waterRepository,
                 goalRepository = lifeTrackApplication().container.goalRepository,
                 diaryRepository = lifeTrackApplication().container.diaryRepository,
+                periodRepository = lifeTrackApplication().container.periodRepository,
                 preferencesRepository = lifeTrackApplication().container.preferencesRepository,
             )
         }
@@ -49,6 +51,7 @@ object AppViewModelProvider {
             )
         }
         initializer { GoalViewModel(lifeTrackApplication().container.goalRepository) }
+        initializer { PeriodViewModel(lifeTrackApplication().container.periodRepository) }
         initializer {
             val container = lifeTrackApplication().container
             DiaryViewModel(

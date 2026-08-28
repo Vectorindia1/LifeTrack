@@ -3,6 +3,7 @@ package com.lifetrack.core.navigation
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Bloodtype
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Flag
@@ -34,6 +35,7 @@ enum class Destination(
     Goals("goals", R.string.dest_goals, Icons.Filled.Flag),
     Calories("calories", R.string.dest_calories, Icons.Filled.Restaurant),
     Water("water", R.string.dest_water, Icons.Filled.LocalDrink),
+    Period("period", R.string.dest_period, Icons.Filled.Bloodtype),
     ;
 
     companion object {

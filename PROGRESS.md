@@ -16,10 +16,29 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 10. Settings screen
 - [ ] 11. Polish (theming, empty states, animations, dark mode)
 - [ ] 12. (Stretch) CSV export
+- [x] 13. Period tracker (added 2026-08-29, post-v1)
 
 ---
 
 ## Session Log
+
+### Session 12 (continued) — 2026-08-29
+**Period tracker added**, on top of this session's notification diagnostics.
+
+**Done:**
+- New tracker, following the established pattern exactly: `PeriodLog` entity (Room migration v3→v4), `PeriodDao`/`PeriodRepository`, pure `CycleStats` logic (average cycle length, current cycle day, per-entry duration — 8 new tests), `PeriodViewModel`, `PeriodScreen` (one-tap "log today", date picker for other dates, history list, end-date editing), a dashboard card, and a new `Destination.Period` (no bottom-nav tab, reached via the dashboard card — same pattern as Goals/Calories/Water).
+- Scope, per the user's explicit choice: a simple start-date log with history and an average cycle length. **No next-period prediction, no symptom/flow tracking** — those were offered as options and declined.
+- **Wording is deliberately neutral about whose cycle is being tracked** — the user's own framing: this could be the account holder's own periods, or someone else's (e.g. a partner's) logged on their behalf. No copy anywhere presumes who is being tracked.
+- PRD.md updated: new section 7.10, `PeriodLog` added to section 6's data model, a new (unrenumbered) milestone 13.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, zero warnings, **78/78 tests pass** (70 previous + 8 new `CycleStatsTest`).
+- Migration v3→v4 SQL (table + unique index) checked byte-for-byte against the exported v4 schema.
+- String resources audited both ways — one unused string dropped.
+
+**A real mistake caught mid-session, worth flagging plainly:** two Python `str.replace()` edits to `DashboardViewModel.kt` silently did nothing — the target text had shifted since I'd last read the file, `str.replace()` doesn't error on a no-match, and the script's success message printed regardless of whether anything actually changed. The build caught both (`Unresolved reference`), but this is the second time this exact failure mode has hit this session (the water quick-add fix earlier had the same root cause, in strings.xml). Switched to the Edit tool (reads first, errors loudly on any mismatch) to fix both, and noted the lesson in MEMORY.md for future sessions.
+
+**Next up:** waiting on your test of the notification diagnostics (Settings → Reminders → status/test button) and a look at the new Period tracker on a real screen — nothing in this feature has been rendered either.
 
 ### Session 12 — 2026-08-29
 **Notification diagnostics**, in response to "notifications aren't working."

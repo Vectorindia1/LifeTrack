@@ -53,6 +53,8 @@ WaterGoal (id, daily_target_ml)
 DiaryEntry (id, date, text, mood)  -- one per day
 
 NotificationSettings (id, feature_type, enabled, reminder_time)
+
+PeriodLog (id, start_date, end_date)  -- added 2026-08-29, see section 7.10
 ```
 
 ## 7. Features & Screens
@@ -111,6 +113,16 @@ Single daily consolidation job checks all trackers and sends ONE notification co
 
 All reminder times are user-configurable in Settings. Users can disable any category independently.
 
+### 7.10 Period Tracker (added 2026-08-29, post-v1)
+Added by user request, not part of the original v1 scope. Deliberately minimal:
+- Log a period's start date. One tap for "today"; a date picker for any other date.
+- Optionally set an end date once it's over.
+- History list of past periods, with duration where an end date is set.
+- Average cycle length shown once two or more periods are logged. **No prediction of a future date** — this is a log with a computed average, not a forecast.
+- Dashboard card shows the current cycle day (days since the last logged start) and taps through to the full tracker, consistent with Goals/Calories/Water.
+- **Wording throughout is neutral about whose cycle is being tracked.** This app is single-user; that one user might be logging their own periods, or someone else's (e.g. a partner's) on their behalf. Copy avoids "my period" / gendered phrasing for exactly that reason — see MEMORY.md.
+- No symptom or flow-intensity tracking in this version.
+
 ### 7.9 Settings
 - Set daily targets (calories, water, ml increments)
 - Configure notification times / toggle categories
@@ -144,6 +156,7 @@ All reminder times are user-configurable in Settings. Users can disable any cate
 10. Settings screen
 11. Polish: theming, empty states, animations, dark mode
 12. (Stretch) CSV export
+13. Period tracker (added 2026-08-29, post-v1 — see section 7.10)
 
 ## 11. Open Questions
 - Should habit "frequency" support custom day-of-week schedules in v1, or just daily/weekly?

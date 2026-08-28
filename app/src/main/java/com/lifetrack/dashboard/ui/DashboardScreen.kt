@@ -118,6 +118,8 @@ private fun DashboardContent(
         }
 
         item { DiaryCard(uiState = uiState, onOpen = onOpen) }
+
+        item { PeriodCard(uiState = uiState, onOpen = onOpen) }
     }
 }
 
@@ -429,6 +431,41 @@ private fun DiaryCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = if (uiState.diaryWrittenToday) accent else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 52.dp),
+            )
+        }
+    }
+}
+
+/**
+ * Period tracker card — not in the original PRD, added by user request (session 12).
+ * Wording is neutral about whose cycle is being tracked, matching the feature's intent.
+ */
+@Composable
+private fun PeriodCard(
+    uiState: DashboardUiState,
+    onOpen: (Destination) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val accent = Accents.Period.resolved
+    ElevatedCard(
+        onClick = { onOpen(Destination.Period) },
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        CardHeader(
+            icon = FeatureGlyphs.Period.icon,
+            accent = accent,
+            title = stringResource(R.string.dashboard_period_title),
+            modifier = Modifier.padding(16.dp),
+        ) {
+            val day = uiState.periodCurrentCycleDay
+            Text(
+                text = when {
+                    day != null -> stringResource(R.string.period_current_day, day)
+                    uiState.hasPeriodLogs -> ""
+                    else -> stringResource(R.string.dashboard_period_prompt)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

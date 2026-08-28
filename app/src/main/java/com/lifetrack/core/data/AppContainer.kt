@@ -4,6 +4,7 @@ import android.content.Context
 import com.lifetrack.calorie.data.CalorieRepository
 import com.lifetrack.diary.data.DiaryRepository
 import com.lifetrack.expense.data.ExpenseRepository
+import com.lifetrack.period.data.PeriodRepository
 import com.lifetrack.goal.data.GoalRepository
 import com.lifetrack.habit.data.HabitRepository
 import com.lifetrack.notification.data.NotificationSettingsRepository
@@ -35,6 +36,7 @@ class AppContainer(context: Context) {
     val preferencesRepository: PreferencesRepository by lazy {
         PreferencesRepository(database.appPreferencesDao())
     }
+    val periodRepository: PeriodRepository by lazy { PeriodRepository(database.periodDao()) }
     val notificationSettingsRepository: NotificationSettingsRepository by lazy {
         NotificationSettingsRepository(notificationSettingsDao)
     }

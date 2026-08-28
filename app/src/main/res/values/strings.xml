@@ -8,6 +8,7 @@
     <string name="dest_expenses">Expenses</string>
     <string name="dest_calories">Calories</string>
     <string name="dest_water">Water</string>
+    <string name="dest_period">Period</string>
     <string name="dest_diary">Diary</string>
     <string name="dest_settings">Settings</string>
 
@@ -240,4 +241,26 @@
     <string name="settings_notif_test">Send a test notification now</string>
     <string name="settings_notif_next_check">Next check: %1$s</string>
     <string name="settings_notif_next_check_none">No reminders are enabled</string>
+    <!-- Period tracker (session 12). Wording is deliberately neutral about whose
+         cycle is being tracked: the account holder's own, or someone else's. -->
+    <string name="period_title">Period tracker</string>
+    <string name="period_log_today">Log period start</string>
+    <string name="period_log_other_date">Log a different date</string>
+    <string name="period_current_day">Day %1$d of cycle</string>
+    <string name="period_average_length">Average cycle: %1$d days</string>
+    <string name="period_average_unknown">Log two or more to see an average</string>
+    <string name="period_history_title">History</string>
+    <string name="period_duration_days">%1$d days</string>
+    <string name="period_ongoing">Ongoing</string>
+    <string name="period_set_end">Set end date</string>
+    <string name="period_clear_end">Clear end date</string>
+    <string name="period_delete">Delete entry</string>
+    <string name="period_empty_title">Nothing logged yet</string>
+    <string name="period_empty_body">Log a start date to begin tracking. One tap for today, or pick another date.</string>
+    <string name="period_save">Save</string>
+    <string name="period_cancel">Cancel</string>
+
+    <!-- Dashboard period card -->
+    <string name="dashboard_period_title">Period</string>
+    <string name="dashboard_period_prompt">Not logged yet</string>
 </resources>

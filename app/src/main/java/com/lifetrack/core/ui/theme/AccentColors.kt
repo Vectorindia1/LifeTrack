@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Bloodtype
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Book
@@ -31,6 +32,7 @@ object Accents {
     val Expense = FeatureAccent(Color(0xFFE0602E), Color(0xFFF6906E))
     val Goal = FeatureAccent(Color(0xFF8B5CF6), Color(0xFFC4A9FA))
     val Diary = FeatureAccent(Color(0xFF6C5CE7), Color(0xFFB5ABF5))
+    val Period = FeatureAccent(Color(0xFFD6336C), Color(0xFFF783AC))
 
     /** A small rotation for goals, which don't otherwise have a natural per-item color. */
     val goalPalette = listOf(
@@ -66,6 +68,7 @@ object FeatureGlyphs {
     val Calorie = FeatureGlyph(Icons.Filled.Restaurant, Accents.Calorie)
     val Expense = FeatureGlyph(Icons.Filled.AccountBalanceWallet, Accents.Expense)
     val Diary = FeatureGlyph(Icons.Filled.Book, Accents.Diary)
+    val Period = FeatureGlyph(Icons.Filled.Bloodtype, Accents.Period)
 }
 
 /** A small rotation of icons for goals, paired index-for-index with [Accents.goalPalette]. */

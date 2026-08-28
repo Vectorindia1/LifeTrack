@@ -21,6 +21,9 @@ import com.lifetrack.habit.data.HabitSchedule
 import com.lifetrack.goal.viewmodel.GoalItem
 import com.lifetrack.goal.viewmodel.toItem
 import com.lifetrack.habit.viewmodel.HabitItem
+import com.lifetrack.period.data.CycleStats
+import com.lifetrack.period.data.PeriodLog
+import com.lifetrack.period.data.PeriodRepository
 import com.lifetrack.water.data.WaterGoal
 import com.lifetrack.water.data.WaterLog
 import com.lifetrack.water.data.WaterRepository
@@ -54,6 +57,8 @@ data class DashboardUiState(
     val waterIncrementSmallMl: Int = AppPreferences.DEFAULT_SMALL_ML,
     val waterIncrementLargeMl: Int = AppPreferences.DEFAULT_LARGE_ML,
     val displayName: String? = null,
+    val periodCurrentCycleDay: Int? = null,
+    val hasPeriodLogs: Boolean = false,
 ) {
     val hasMoreGoals: Boolean get() = totalActiveGoals > topGoals.size
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
@@ -85,6 +90,20 @@ private data class DayData(
     val calorieGoal: CalorieGoal? = null,
     val waterGoal: WaterGoal? = null,
     val diaryEntries: List<DiaryEntry> = emptyList(),
+    val periodLogs: List<PeriodLog> = emptyList(),
+)
+
+/**
+ * Groups the sources that aren't day-scoped queries themselves (goal, calorie, water
+ * targets; the diary/period lists, which are read in full and filtered client-side)
+ * so the inner `combine` inside [DashboardViewModel]'s `flatMapLatest` stays under
+ * the 5-flow limit alongside it.
+ */
+private data class DayExtras(
+    val calorieGoal: CalorieGoal?,
+    val waterGoal: WaterGoal?,
+    val diary: List<DiaryEntry>,
+    val periods: List<PeriodLog>,
 )
 
 /**
@@ -98,6 +117,7 @@ class DashboardViewModel(
     private val waterRepository: WaterRepository,
     private val goalRepository: GoalRepository,
     private val diaryRepository: DiaryRepository,
+    private val periodRepository: PeriodRepository,
     preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
@@ -117,9 +137,15 @@ class DashboardViewModel(
                 calorieRepository.observeGoal(),
                 waterRepository.observeGoal(),
                 diaryRepository.observeRecentEntries(date),
-            ) { calorieGoal, waterGoal, diary -> Triple(calorieGoal, waterGoal, diary) },
-        ) { completions, expenses, food, water, (calorieGoal, waterGoal, diary) ->
-            date to DayData(completions, expenses, food, water, calorieGoal, waterGoal, diary)
+                periodRepository.observeAll(),
+            ) { calorieGoal, waterGoal, diary, periods ->
+                DayExtras(calorieGoal, waterGoal, diary, periods)
+            },
+        ) { completions, expenses, food, water, extras ->
+            date to DayData(
+                completions, expenses, food, water,
+                extras.calorieGoal, extras.waterGoal, extras.diary, extras.periods,
+            )
         }
     }
 
@@ -165,6 +191,8 @@ class DashboardViewModel(
             waterIncrementSmallMl = preferences.waterIncrementSmallMl,
             waterIncrementLargeMl = preferences.waterIncrementLargeMl,
             displayName = preferences.displayName,
+            periodCurrentCycleDay = CycleStats.currentCycleDay(data.periodLogs, date),
+            hasPeriodLogs = data.periodLogs.isNotEmpty(),
         )
     }.stateIn(
         scope = viewModelScope,

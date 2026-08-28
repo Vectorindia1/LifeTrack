@@ -12,6 +12,7 @@ import com.lifetrack.dashboard.ui.DashboardScreen
 import com.lifetrack.diary.ui.DiaryScreen
 import com.lifetrack.expense.ui.ExpenseScreen
 import com.lifetrack.goal.ui.GoalScreen
+import com.lifetrack.period.ui.PeriodScreen
 import com.lifetrack.habit.ui.HabitScreen
 import com.lifetrack.settings.ui.SettingsScreen
 import com.lifetrack.water.ui.WaterScreen
@@ -47,6 +48,9 @@ fun LifeTrackNavHost(
         }
         composable(Destination.Water.route) {
             WaterScreen(contentPadding = contentPadding)
+        }
+        composable(Destination.Period.route) {
+            PeriodScreen(contentPadding = contentPadding)
         }
         composable(Destination.Diary.route) {
             DiaryScreen(contentPadding = contentPadding)
