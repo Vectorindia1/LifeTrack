@@ -15,6 +15,7 @@ import com.lifetrack.habit.data.HabitRepository
 import com.lifetrack.notification.data.FeatureType
 import com.lifetrack.notification.data.NotificationSettings
 import com.lifetrack.notification.data.NotificationSettingsRepository
+import com.lifetrack.notification.work.DigestRunner
 import com.lifetrack.notification.work.DigestScheduler
 import com.lifetrack.water.data.WaterGoal
 import com.lifetrack.water.data.WaterRepository
@@ -124,5 +125,16 @@ class SettingsViewModel(
 
     fun renameCategory(from: String, to: String) {
         viewModelScope.launch { expenseRepository.renameCategory(from, to) }
+    }
+
+    /**
+     * Runs the exact same digest logic the scheduled worker uses, but ignoring the
+     * "has this feature's reminder time passed yet" gate — so a user can see the
+     * notification pipeline actually works right now, instead of waiting for the
+     * next scheduled check (which, on a fresh install late in the day, can be
+     * tomorrow morning). See MEMORY.md for why this exists.
+     */
+    fun sendTestNotification() {
+        viewModelScope.launch { DigestRunner.run(context, ignoreTiming = true) }
     }
 }

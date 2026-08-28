@@ -21,6 +21,24 @@ Check the box when a milestone is fully working end-to-end (not just started).
 
 ## Session Log
 
+### Session 12 — 2026-08-29
+**Notification diagnostics**, in response to "notifications aren't working."
+
+I have no device access, so rather than guess at a phantom bug, I reviewed the scheduling/worker code (found it structurally sound) and made the actual failure mode — most likely the *complete lack of visibility* into scheduling and permission state — diagnosable and partly fixed:
+
+**Done:**
+- Extracted `DigestRunner` — the digest-assembly-and-post logic shared by the scheduled `DailyDigestWorker` and a new manual test action, so they can never drift.
+- `DailyDigest.build()` gained an `ignoreTiming` flag: skips the "has this reminder time passed today" gate for manual testing, while still respecting per-feature enable/disable.
+- Settings' Reminders card now shows: whether the notification permission is actually granted (with a direct link to the system settings page if not), the next scheduled check's date and time, and a **"Send a test notification now"** button that runs the real pipeline immediately.
+
+**Why I believe this explains most of the complaint:** the default schedule's times are 09:00/14:00/18:00/20:00/20:30/21:30. Install or open the app after 21:30 and the *first* scheduled check is correctly next-day 09:00 — with nothing in the UI saying so, that is indistinguishable from broken. A denied notification permission also fails completely silently by design. Both are now visible in Settings.
+
+**Verified:** `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, zero warnings, 70/70 tests pass (digest logic behavior unchanged for the default `ignoreTiming = false` path — no test needed to change).
+
+**What I need from you next:** open Settings, check what the notification status row says, and try "Send a test notification now". If a notification appears, the pipeline is proven correct and the original issue was scheduling visibility (now fixed) or plain waiting for the right time. If nothing appears even from the test button, that is a real bug — tell me and I'll dig further with that new information. If the test button works but the *scheduled* check still never fires on its own after a day, that likely points to OEM battery/background-app restrictions, which is a phone-settings problem, not an app-code one.
+
+**Also asked about:** a "period tracking" column/feature. This is a genuinely new tracker beyond the original PRD's six (habit/goal/expense/calorie/water/diary) and its scope varies hugely depending on what's wanted (a simple start-date log vs. a full cycle tracker with predictions and symptoms) — asked the user to clarify before building schema for it, rather than guess and build the wrong thing.
+
 ### Session 11 (follow-up) — 2026-08-29
 **First real screenshot of the app, and the first real bug it caught.**
 

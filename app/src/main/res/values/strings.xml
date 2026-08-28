@@ -233,4 +233,11 @@
     <string name="diary_stat_spent">Spent</string>
     <string name="diary_stat_calories">Calories</string>
     <string name="diary_stat_water">Water</string>
+    <!-- Notification diagnostics (session 12) -->
+    <string name="settings_notif_status_granted">Notifications are enabled</string>
+    <string name="settings_notif_status_denied">Notifications are turned off for this app</string>
+    <string name="settings_notif_open_settings">Open notification settings</string>
+    <string name="settings_notif_test">Send a test notification now</string>
+    <string name="settings_notif_next_check">Next check: %1$s</string>
+    <string name="settings_notif_next_check_none">No reminders are enabled</string>
 </resources>

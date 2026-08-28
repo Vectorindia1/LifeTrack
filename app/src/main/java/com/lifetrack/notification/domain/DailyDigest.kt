@@ -93,23 +93,33 @@ object DailyDigest {
      * @param reminders enabled reminder times per feature. A feature absent from the
      *   map is disabled and contributes nothing, which is how PRD 7.8's
      *   "users can disable any category independently" is honoured.
+     * @param ignoreTiming skips the "has a reminder time for this feature already
+     *   passed today" check, showing every unmet item a feature would eventually
+     *   report. Used only by Settings' "send a test notification now" action, so a
+     *   user can see the digest actually works without waiting for the next
+     *   scheduled time — a feature is still skipped entirely if it is disabled
+     *   (absent from [reminders]).
      */
     fun build(
         snapshot: DigestSnapshot,
         reminders: Map<FeatureType, List<LocalTime>>,
+        ignoreTiming: Boolean = false,
     ): List<DigestItem> = buildList {
-        if (reminders.isDue(FeatureType.HABIT, snapshot.now) &&
+        fun due(feature: FeatureType) =
+            if (ignoreTiming) feature in reminders else reminders.isDue(feature, snapshot.now)
+
+        if (due(FeatureType.HABIT) &&
             snapshot.habitsDue > 0 &&
             snapshot.habitsDone < snapshot.habitsDue
         ) {
             add(DigestItem.Habits(snapshot.habitsDone, snapshot.habitsDue))
         }
 
-        if (reminders.isDue(FeatureType.GOAL, snapshot.now) && snapshot.goalsDueSoon.isNotEmpty()) {
+        if (due(FeatureType.GOAL) && snapshot.goalsDueSoon.isNotEmpty()) {
             add(DigestItem.Goals(snapshot.goalsDueSoon))
         }
 
-        if (reminders.isDue(FeatureType.CALORIE, snapshot.now) && snapshot.calorieTarget > 0) {
+        if (due(FeatureType.CALORIE) && snapshot.calorieTarget > 0) {
             when {
                 snapshot.caloriesEaten > snapshot.calorieTarget ->
                     add(DigestItem.CaloriesOver(snapshot.caloriesEaten, snapshot.calorieTarget))
@@ -119,11 +129,11 @@ object DailyDigest {
             }
         }
 
-        if (reminders.isDue(FeatureType.WATER, snapshot.now) && isBehindOnWater(snapshot)) {
+        if (due(FeatureType.WATER) && isBehindOnWater(snapshot)) {
             add(DigestItem.Water(snapshot.waterMl, snapshot.waterTargetMl))
         }
 
-        if (reminders.isDue(FeatureType.DIARY, snapshot.now) && !snapshot.diaryWritten) {
+        if (due(FeatureType.DIARY) && !snapshot.diaryWritten) {
             add(DigestItem.Diary)
         }
     }

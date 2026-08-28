@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -66,13 +67,31 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var editingNumber by remember { mutableStateOf<NumberEdit?>(null) }
     var editingTime by remember { mutableStateOf<NotificationSettings?>(null) }
     var renaming by remember { mutableStateOf<CategoryUsage?>(null) }
 
+    // Refreshed on resume, not just once: the only way a denied permission changes is
+    // the user granting it from system settings and coming back to this screen.
+    var notificationsEnabled by remember { mutableStateOf(com.lifetrack.notification.Notifier.canPost(context)) }
+    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
+        notificationsEnabled = com.lifetrack.notification.Notifier.canPost(context)
+        onPauseOrDispose { }
+    }
+
+    val nextCheck = remember(uiState.reminders) {
+        val enabled = uiState.reminders
+            .filter { it.enabled }
+            .groupBy({ it.featureType }, { it.reminderTime })
+        com.lifetrack.notification.work.DigestScheduler.nextCheckTime(enabled)
+    }
+
     SettingsContent(
         uiState = uiState,
+        notificationsEnabled = notificationsEnabled,
+        nextCheck = nextCheck,
         onEditNumber = { editingNumber = it },
         onToggleReminder = viewModel::setReminderEnabled,
         onEditTime = { editingTime = it },
@@ -80,6 +99,12 @@ fun SettingsScreen(
         onRenameCategory = { renaming = it },
         onTheme = viewModel::setTheme,
         onDisplayName = viewModel::setDisplayName,
+        onOpenNotificationSettings = {
+            val intent = android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+            context.startActivity(intent)
+        },
+        onSendTestNotification = viewModel::sendTestNotification,
         contentPadding = contentPadding,
         modifier = modifier,
     )
@@ -132,6 +157,8 @@ fun SettingsScreen(
 @Composable
 private fun SettingsContent(
     uiState: SettingsUiState,
+    notificationsEnabled: Boolean,
+    nextCheck: java.time.LocalDateTime?,
     onEditNumber: (NumberEdit) -> Unit,
     onToggleReminder: (FeatureType, Boolean) -> Unit,
     onEditTime: (NotificationSettings) -> Unit,
@@ -139,6 +166,8 @@ private fun SettingsContent(
     onRenameCategory: (CategoryUsage) -> Unit,
     onTheme: (ThemeMode) -> Unit,
     onDisplayName: (String?) -> Unit,
+    onOpenNotificationSettings: () -> Unit,
+    onSendTestNotification: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -258,8 +287,42 @@ private fun SettingsContent(
                     text = stringResource(R.string.settings_notifications_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 4.dp),
                 )
+
+                // The permission and next-check time are the two things that make an
+                // apparently "silent" notification system either explainable or a
+                // real bug. Both are invisible without this row.
+                Text(
+                    text = stringResource(
+                        if (notificationsEnabled) {
+                            R.string.settings_notif_status_granted
+                        } else {
+                            R.string.settings_notif_status_denied
+                        },
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (notificationsEnabled) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                )
+                if (!notificationsEnabled) {
+                    TextButton(onClick = onOpenNotificationSettings) {
+                        Text(stringResource(R.string.settings_notif_open_settings))
+                    }
+                }
+                Text(
+                    text = nextCheck?.let {
+                        stringResource(
+                            R.string.settings_notif_next_check,
+                            it.format(remember { java.time.format.DateTimeFormatter.ofPattern("EEE d MMM, HH:mm") }),
+                        )
+                    } ?: stringResource(R.string.settings_notif_next_check_none),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
                 FeatureType.entries.forEach { feature ->
                     val rows = uiState.remindersByFeature[feature].orEmpty()
                     ReminderRow(
@@ -268,6 +331,12 @@ private fun SettingsContent(
                         onToggle = { onToggleReminder(feature, it) },
                         onEditTime = onEditTime,
                     )
+                }
+
+                // Doesn't wait for a scheduled time — proves the whole pipeline
+                // (permission, channel, digest content) works right now.
+                Button(onClick = onSendTestNotification, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.settings_notif_test))
                 }
             }
         }
