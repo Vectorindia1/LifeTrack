@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -95,6 +96,8 @@ private fun DashboardContent(
                 FirstHabitPrompt(onAddHabit = { onOpen(Destination.Habits) })
             }
         }
+
+        item { CaloriesCard(uiState = uiState, onOpen = onOpen) }
 
         item { SpentTodayCard(uiState = uiState, onOpen = onOpen) }
 
@@ -208,6 +211,54 @@ private fun DashboardHabitRow(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 12.dp),
+            )
+        }
+    }
+}
+
+/** PRD 7.1's calorie progress bar. */
+@Composable
+private fun CaloriesCard(
+    uiState: DashboardUiState,
+    onOpen: (Destination) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(
+        onClick = { onOpen(Destination.Calories) },
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.dashboard_calories_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = stringResource(
+                        R.string.calorie_eaten_of_target,
+                        uiState.caloriesEaten,
+                        uiState.calorieTarget,
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (uiState.isOverCalories) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
+            LinearProgressIndicator(
+                progress = { uiState.calorieProgress },
+                modifier = Modifier.fillMaxWidth(),
+                color = if (uiState.isOverCalories) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
             )
         }
     }

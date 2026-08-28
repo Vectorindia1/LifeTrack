@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.lifetrack.LifeTrackApplication
 import com.lifetrack.dashboard.viewmodel.DashboardViewModel
+import com.lifetrack.calorie.viewmodel.CalorieViewModel
 import com.lifetrack.expense.viewmodel.ExpenseViewModel
 import com.lifetrack.habit.viewmodel.HabitViewModel
 
@@ -17,10 +18,12 @@ object AppViewModelProvider {
             DashboardViewModel(
                 habitRepository = lifeTrackApplication().container.habitRepository,
                 expenseRepository = lifeTrackApplication().container.expenseRepository,
+                calorieRepository = lifeTrackApplication().container.calorieRepository,
             )
         }
         initializer { HabitViewModel(lifeTrackApplication().container.habitRepository) }
         initializer { ExpenseViewModel(lifeTrackApplication().container.expenseRepository) }
+        initializer { CalorieViewModel(lifeTrackApplication().container.calorieRepository) }
     }
 }
 

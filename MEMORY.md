@@ -160,6 +160,23 @@ The 1.x/2.x examples online do not compile. What works, confirmed by compiling a
 - WEEK is a **rolling 7 days** ending today; MONTH is **calendar month-to-date**, not a rolling 30 days.
 - Chosen because "this month" is how people actually think about a budget, whereas a rolling 30-day figure answers a question nobody asked. Pinned by tests.
 
+### 2026-08-28 (session 5) — Chart code is centralised in `core/ui/chart/Charts.kt`
+- `SimpleBarChart` and `SimpleLineChart` are the only two chart entry points. The habit, expense and calorie charts are thin wrappers that supply data, colour and a y-axis formatter.
+- **Why:** CLAUDE.md restricts graphs to bar/line/ring, and Vico's API changes sharply between major versions. Keeping Vico imports in one file means a future Vico upgrade is a one-file change instead of a hunt.
+- **Add new charts by wrapping these, not by importing Vico directly.** If a chart genuinely cannot be expressed here, that is a signal it is too complex for the PRD's "simple graphs only" rule.
+- Progress rings are deliberately NOT here — they are plain Compose (`LinearProgressIndicator` today, a `Canvas` ring for water in milestone 6), not charting.
+
+### 2026-08-28 (session 5) — Calorie progress clamps, overshoot lives in `remaining`
+- `CalorieUiState.progress` is coerced into 0f..1f so a progress bar can never overflow its track.
+- Going over target is expressed by `isOverTarget` and a **negative** `remaining`, and rendered in the error colour.
+- Eating exactly the target is **not** "over" — pinned by a test, because off-by-one here would nag the user on a day they got it exactly right.
+- A zero or missing target yields 0f rather than dividing by zero.
+
+### 2026-08-28 (session 5) — Calorie target editing temporarily lives on the calorie screen
+- PRD 7.9 puts daily targets in Settings, which is **milestone 10**.
+- A "Change target" dialog sits on the calorie screen for now, because otherwise the target is stuck at the seeded 2000 kcal and the whole eaten-vs-target feature cannot be exercised.
+- **Move it to Settings in milestone 10** and decide then whether to keep the shortcut. Same will apply to the water target in milestone 6.
+
 ---
 
 ## Known Gotchas / Things to Watch

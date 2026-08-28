@@ -1,6 +1,7 @@
 package com.lifetrack.core.data
 
 import android.content.Context
+import com.lifetrack.calorie.data.CalorieRepository
 import com.lifetrack.expense.data.ExpenseRepository
 import com.lifetrack.habit.data.HabitRepository
 
@@ -23,4 +24,5 @@ class AppContainer(context: Context) {
 
     val habitRepository: HabitRepository by lazy { HabitRepository(habitDao) }
     val expenseRepository: ExpenseRepository by lazy { ExpenseRepository(expenseDao) }
+    val calorieRepository: CalorieRepository by lazy { CalorieRepository(calorieDao) }
 }

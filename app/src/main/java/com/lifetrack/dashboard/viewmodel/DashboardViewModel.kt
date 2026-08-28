@@ -2,6 +2,8 @@ package com.lifetrack.dashboard.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lifetrack.calorie.data.CalorieGoal
+import com.lifetrack.calorie.data.CalorieRepository
 import com.lifetrack.expense.data.ExpenseRepository
 import com.lifetrack.habit.data.HabitRepository
 import com.lifetrack.habit.data.HabitSchedule
@@ -23,7 +25,12 @@ data class DashboardUiState(
     val habitsDueToday: List<HabitItem> = emptyList(),
     val hasAnyHabit: Boolean = false,
     val spentToday: Double = 0.0,
+    val caloriesEaten: Int = 0,
+    val calorieTarget: Int = CalorieGoal.DEFAULT_DAILY_TARGET,
 ) {
+    val calorieProgress: Float
+        get() = if (calorieTarget <= 0) 0f else (caloriesEaten.toFloat() / calorieTarget).coerceIn(0f, 1f)
+    val isOverCalories: Boolean get() = caloriesEaten > calorieTarget
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
     val dueCount: Int get() = habitsDueToday.size
     val allDone: Boolean get() = dueCount > 0 && doneCount == dueCount
@@ -37,6 +44,7 @@ data class DashboardUiState(
 class DashboardViewModel(
     private val habitRepository: HabitRepository,
     private val expenseRepository: ExpenseRepository,
+    private val calorieRepository: CalorieRepository,
 ) : ViewModel() {
 
     /**
@@ -49,8 +57,9 @@ class DashboardViewModel(
         habitRepository.observeHabits(),
         today.flatMapLatest { habitRepository.observeRecentCompletions(it) },
         today.flatMapLatest { expenseRepository.observeBetween(it, it) },
-        today,
-    ) { habits, logs, todaysExpenses, date ->
+        today.flatMapLatest { calorieRepository.observeLogsBetween(it, it) },
+        combine(today, calorieRepository.observeGoal()) { date, goal -> date to goal },
+    ) { habits, logs, todaysExpenses, todaysFood, (date, calorieGoal) ->
         val completedByHabit = logs
             .groupBy { it.habitId }
             .mapValues { (_, entries) -> entries.mapTo(mutableSetOf()) { it.date } }
@@ -73,6 +82,8 @@ class DashboardViewModel(
             habitsDueToday = due,
             hasAnyHabit = habits.isNotEmpty(),
             spentToday = todaysExpenses.sumOf { it.amount },
+            caloriesEaten = todaysFood.sumOf { it.calories },
+            calorieTarget = calorieGoal?.dailyTarget ?: CalorieGoal.DEFAULT_DAILY_TARGET,
         )
     }.stateIn(
         scope = viewModelScope,

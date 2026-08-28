@@ -8,7 +8,7 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 2. Habit tracker (add/log/streak/chart)
 - [x] 3. Dashboard v1 (habits only)
 - [x] 4. Expense tracker + dashboard integration
-- [ ] 5. Calorie tracker + dashboard integration
+- [x] 5. Calorie tracker + dashboard integration
 - [ ] 6. Water tracker + dashboard integration
 - [ ] 7. Goal tracker + dashboard integration
 - [ ] 8. Diary + dashboard integration
@@ -20,6 +20,42 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ---
 
 ## Session Log
+
+### Session 5 — 2026-08-28
+**Milestone 5 complete.** Calorie tracker plus dashboard progress bar. Also refactored charting.
+
+**Done this session:**
+- **Extracted `core/ui/chart/Charts.kt`** — `SimpleBarChart` and `SimpleLineChart`. All Vico imports now live in one file; the habit and expense charts were refactored onto it and calorie's chart is the first built directly on it. This was done before writing a fourth copy of the same boilerplate.
+- `CalorieRepository` + `CalorieViewModel`, reusing the local-day helpers written for expenses.
+- `CalorieScreen`: eaten-vs-target header with a progress bar that turns red over target, a 7/30-day line chart, today's entries with delete, and a target-editing dialog.
+- `AddCalorieSheet`: food name + calories, manual entry only (PRD 3 rules out scanning for v1).
+- **Dashboard now has the calorie progress bar** from PRD 7.1, alongside habits and spend.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero compiler warnings**.
+- **30/30 unit tests pass** (16 habit + 9 expense + 5 new calorie), confirmed with `--rerun-tasks`.
+- The refactor of the two existing charts is covered by the build plus the untouched habit/expense tests.
+- String resources audited both ways — clean.
+
+**Decisions recorded in MEMORY.md:**
+- All charting goes through `core/ui/chart`; never import Vico directly in a feature.
+- Calorie progress clamps to 1.0; overshoot is carried by a negative `remaining`, and exactly-on-target is not "over".
+- The calorie target dialog is a temporary home — PRD 7.9 puts targets in Settings (milestone 10).
+
+**Known issues / things to watch:**
+- All version pins from session 1 still apply.
+- **The dashboard is now four cards** (habits, calories, spend, more-trackers) with water, goals and diary still to come. PRD 7.1 wants it all visible **without scrolling** — this budget is being spent without ever seeing a real screen, and something will likely have to become more compact.
+- The calorie target dialog duplicates what Settings will own in milestone 10.
+
+**Still not verified:**
+- The app has not been run. Per your call, testing happens at the end rather than per milestone — noting it here only so the record is accurate. Room has never opened at runtime and four charts have never been drawn.
+
+**Next up — Milestone 6: Water tracker + dashboard integration**
+1. `WaterRepository` + `WaterViewModel`; the `water_goal` row is already seeded at 2500 ml.
+2. Quick-add +250 ml / +500 ml / custom.
+3. Daily target **progress ring** — plain Compose `Canvas`, not a chart library.
+4. Weekly bar chart via `SimpleBarChart`.
+5. Dashboard ring with the quick-add buttons inline, which is the strictest ≤2-tap case in PRD 7.1.
 
 ### Session 4 — 2026-08-28
 **Milestone 4 complete.** Expense tracker plus dashboard integration.

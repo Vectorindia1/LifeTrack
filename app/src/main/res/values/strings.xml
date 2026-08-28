@@ -17,7 +17,6 @@
     <!-- Milestone-1 placeholder scaffolding -->
     <string name="placeholder_coming_in_milestone">Coming in milestone %1$d</string>
     <string name="placeholder_goals_body">Set a target, nudge the number up, see the deadline coming.</string>
-    <string name="placeholder_calories_body">Log food and calories against a daily target.</string>
     <string name="placeholder_water_body">Quick +250 ml / +500 ml taps against a daily target.</string>
     <string name="placeholder_diary_body">One entry a day, a mood tag, and a calendar to look back.</string>
     <string name="placeholder_settings_body">Daily targets, reminder times, habit and category management.</string>
@@ -89,4 +88,27 @@
     <!-- Dashboard spend section -->
     <string name="dashboard_spent_title">Spent today</string>
     <string name="dashboard_spent_none">Nothing logged today</string>
+    <!-- Calorie tracker (milestone 5) -->
+    <string name="calorie_add">Add food</string>
+    <string name="calorie_add_title">Log food</string>
+    <string name="calorie_food_label">Food</string>
+    <string name="calorie_amount_label">Calories</string>
+    <string name="calorie_save">Save</string>
+    <string name="calorie_cancel">Cancel</string>
+    <string name="calorie_delete">Delete entry</string>
+    <string name="calorie_eaten_of_target">%1$d / %2$d kcal</string>
+    <string name="calorie_remaining">%1$d kcal left</string>
+    <string name="calorie_over">%1$d kcal over</string>
+    <string name="calorie_today_title">Today</string>
+    <string name="calorie_history_title">Daily calories</string>
+    <string name="calorie_span_week">7 days</string>
+    <string name="calorie_span_month">30 days</string>
+    <string name="calorie_empty_today">Nothing logged today.</string>
+    <string name="calorie_target_title">Daily target</string>
+    <string name="calorie_target_edit">Change target</string>
+    <string name="calorie_target_label">Daily target (kcal)</string>
+    <string name="calorie_unit">%1$d kcal</string>
+
+    <!-- Dashboard calorie section -->
+    <string name="dashboard_calories_title">Calories</string>
 </resources>
