@@ -17,7 +17,6 @@
     <!-- Milestone-1 placeholder scaffolding -->
     <string name="placeholder_coming_in_milestone">Coming in milestone %1$d</string>
     <string name="placeholder_goals_body">Set a target, nudge the number up, see the deadline coming.</string>
-    <string name="placeholder_expenses_body">Amount, category, done. Totals and a breakdown by category.</string>
     <string name="placeholder_calories_body">Log food and calories against a daily target.</string>
     <string name="placeholder_water_body">Quick +250 ml / +500 ml taps against a daily target.</string>
     <string name="placeholder_diary_body">One entry a day, a mood tag, and a calendar to look back.</string>
@@ -65,4 +64,29 @@
     <string name="dashboard_no_habits_body">Pick one thing you want to do regularly. You can tick it off right here.</string>
     <string name="dashboard_add_habit">Add a habit</string>
     <string name="dashboard_more">More trackers</string>
+    <!-- Expense tracker (milestone 4) -->
+    <string name="expense_add">Add expense</string>
+    <string name="expense_add_title">New expense</string>
+    <string name="expense_amount_label">Amount</string>
+    <string name="expense_note_label">Note (optional)</string>
+    <string name="expense_category_label">Category</string>
+    <string name="expense_custom_category">Custom…</string>
+    <string name="expense_custom_category_label">Category name</string>
+    <string name="expense_save">Save</string>
+    <string name="expense_cancel">Cancel</string>
+    <string name="expense_delete">Delete expense</string>
+    <string name="expense_window_day">Today</string>
+    <string name="expense_window_week">7 days</string>
+    <string name="expense_window_month">This month</string>
+    <string name="expense_total_label">Total</string>
+    <string name="expense_by_category">By category</string>
+    <string name="expense_over_time">Over time</string>
+    <string name="expense_recent">Recent</string>
+    <string name="expense_empty_title">No expenses yet</string>
+    <string name="expense_empty_body">Tap + to log one. Amount and a category is all it takes.</string>
+    <string name="expense_no_data">Nothing logged in this period.</string>
+
+    <!-- Dashboard spend section -->
+    <string name="dashboard_spent_title">Spent today</string>
+    <string name="dashboard_spent_none">Nothing logged today</string>
 </resources>

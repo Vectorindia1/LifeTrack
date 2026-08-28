@@ -2,6 +2,7 @@ package com.lifetrack.dashboard.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lifetrack.expense.data.ExpenseRepository
 import com.lifetrack.habit.data.HabitRepository
 import com.lifetrack.habit.data.HabitSchedule
 import com.lifetrack.habit.viewmodel.HabitItem
@@ -21,6 +22,7 @@ data class DashboardUiState(
     /** Only habits actually due today — an unscheduled habit is not a chore today. */
     val habitsDueToday: List<HabitItem> = emptyList(),
     val hasAnyHabit: Boolean = false,
+    val spentToday: Double = 0.0,
 ) {
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
     val dueCount: Int get() = habitsDueToday.size
@@ -32,7 +34,10 @@ data class DashboardUiState(
  * and diary sections of PRD 7.1 arrive with milestones 4–8.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class DashboardViewModel(private val repository: HabitRepository) : ViewModel() {
+class DashboardViewModel(
+    private val habitRepository: HabitRepository,
+    private val expenseRepository: ExpenseRepository,
+) : ViewModel() {
 
     /**
      * Held as state rather than captured once, so a process left open across
@@ -41,10 +46,11 @@ class DashboardViewModel(private val repository: HabitRepository) : ViewModel() 
     private val today = MutableStateFlow(LocalDate.now())
 
     val uiState: StateFlow<DashboardUiState> = combine(
-        repository.observeHabits(),
-        today.flatMapLatest { repository.observeRecentCompletions(it) },
+        habitRepository.observeHabits(),
+        today.flatMapLatest { habitRepository.observeRecentCompletions(it) },
+        today.flatMapLatest { expenseRepository.observeBetween(it, it) },
         today,
-    ) { habits, logs, date ->
+    ) { habits, logs, todaysExpenses, date ->
         val completedByHabit = logs
             .groupBy { it.habitId }
             .mapValues { (_, entries) -> entries.mapTo(mutableSetOf()) { it.date } }
@@ -66,6 +72,7 @@ class DashboardViewModel(private val repository: HabitRepository) : ViewModel() 
             date = date,
             habitsDueToday = due,
             hasAnyHabit = habits.isNotEmpty(),
+            spentToday = todaysExpenses.sumOf { it.amount },
         )
     }.stateIn(
         scope = viewModelScope,
@@ -82,7 +89,7 @@ class DashboardViewModel(private val repository: HabitRepository) : ViewModel() 
     /** One tap, straight from the dashboard — PRD 8's ≤2-tap rule. */
     fun toggle(item: HabitItem) {
         viewModelScope.launch {
-            repository.setCompleted(item.habit.id, today.value, !item.isDoneToday)
+            habitRepository.setCompleted(item.habit.id, today.value, !item.isDoneToday)
         }
     }
 }

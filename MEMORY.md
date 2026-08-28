@@ -137,6 +137,29 @@ The 1.x/2.x examples online do not compile. What works, confirmed by compiling a
 - `DashboardScreen`'s temporary "Room is live — 10 tables" card and its `db_status_*` strings were deleted, as planned when it was written.
 - **It was never seen running.** It was the intended runtime proof that Room opens and seeds, and no device was ever available to display it. That proof is now folded into the real dashboard: if habits appear and a tick persists, Room works.
 
+### 2026-08-28 (session 4) — Expense categories: presets **and** user-defined
+- Resolves the last of PRD section 11's open questions. Decided with the user this session.
+- 8 presets (`ExpenseCategories.PRESETS`) shown as chips, plus a "Custom…" chip that reveals a free-text field.
+- **There is no category table and there should not be one.** `Expense.category` stays a plain `String`; a custom category "exists" precisely because some expense row uses it. `ExpenseCategories.allKnown()` derives the chip list as presets first, then custom ones already used, sorted.
+- Presets are kept deliberately short — a long list turns a two-tap action into a scrolling decision, which fights PRD section 8.
+- Consequence: renaming a category later means updating rows, not one table row. Acceptable for a single-user app; revisit only if bulk-rename is ever wanted.
+
+### 2026-08-28 (session 4) — Money is locale-formatted, never a hardcoded symbol
+- `core/ui/Money` uses `NumberFormat.getCurrencyInstance()` against the device locale.
+- PRD 7.7's example reads "₹450", but hardcoding ₹ would be wrong on any other device. An India-locale phone gets ₹ from the locale anyway.
+- Amounts are stored as bare `Double` with **no currency code** — this is a single-user, single-currency app. If multi-currency is ever wanted, that is a schema change, not a formatting change.
+- Whole amounts drop the ".00"; chart axes use `formatCompact` (450 / 1.5k / 1M) because a repeated currency symbol on every gridline is noise.
+
+### 2026-08-28 (session 4) — Expense day boundaries convert to local time
+- Expenses are stored as `Instant`, but "today's spend" is a **local calendar** question.
+- `LocalDate.startOfDay()/endOfDay()` in `ExpenseRepository.kt` do the zone conversion; every range query goes through them.
+- **Never slice expense ranges on UTC** — for a user at UTC+5:30, an evening expense would land on the wrong day. Covered by `ExpenseLogicTest`.
+- `endOfDay` is `next midnight − 1ms`, so consecutive days cannot both match the same instant.
+
+### 2026-08-28 (session 4) — Spend windows: DAY / WEEK / MONTH
+- WEEK is a **rolling 7 days** ending today; MONTH is **calendar month-to-date**, not a rolling 30 days.
+- Chosen because "this month" is how people actually think about a budget, whereas a rolling 30-day figure answers a question nobody asked. Pinned by tests.
+
 ---
 
 ## Known Gotchas / Things to Watch

@@ -7,7 +7,7 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 1. Project scaffold + Room DB + navigation shell
 - [x] 2. Habit tracker (add/log/streak/chart)
 - [x] 3. Dashboard v1 (habits only)
-- [ ] 4. Expense tracker + dashboard integration
+- [x] 4. Expense tracker + dashboard integration
 - [ ] 5. Calorie tracker + dashboard integration
 - [ ] 6. Water tracker + dashboard integration
 - [ ] 7. Goal tracker + dashboard integration
@@ -20,6 +20,45 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ---
 
 ## Session Log
+
+### Session 4 — 2026-08-28
+**Milestone 4 complete.** Expense tracker plus dashboard integration.
+
+**Done this session:**
+- `ExpenseRepository` + `ExpenseViewModel` over the milestone-1 DAO.
+- `ExpenseScreen`: total card with a **Today / 7 days / This month** toggle, both PRD 7.4 charts, and a recent-expenses list with delete.
+- `AddExpenseSheet`: amount + category chips + optional note. Amount input is filtered to digits and one separator, and Save stays disabled until the amount parses and a category is chosen.
+- **Two new Vico charts** — a category bar chart and a spend-over-time line chart. These are the second and third charts in the app and the first use of Vico's line layer.
+- `core/ui/Money` — locale-aware currency formatting, plus a compact form for chart axes.
+- **Dashboard now shows today's spend**, tappable through to the tracker (PRD 7.1).
+- Categories: 8 presets plus a "Custom…" chip with free-text entry, resolving PRD section 11's last open question.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero compiler warnings**.
+- **25/25 unit tests pass** (16 habit + 9 new expense), confirmed with `--rerun-tasks`.
+- The new tests cover the things most likely to be wrong and least likely to be noticed: local-day boundaries not being sliced on UTC, month-to-date vs rolling-30, custom categories not duplicating presets, and money formatting.
+- String resources audited both ways — nothing missing, nothing dead.
+
+**Still not verified:**
+- **The app has never been run — four milestones in.** No device or emulator has been available in any session. Room has never opened at runtime, no screen has rendered, and now *three* Vico charts have never been drawn.
+- Chart layout in particular is unproven: the category bar chart truncates labels to 4 characters, which is a guess about spacing that only looking at it can settle.
+
+**Decisions recorded in MEMORY.md:**
+- Categories are presets + user-defined, with no category table — a category exists because a row uses it.
+- Money is locale-formatted; no hardcoded ₹. Amounts stored with no currency code.
+- Expense ranges convert to local time; never slice on UTC.
+- WEEK is rolling 7 days, MONTH is calendar month-to-date.
+
+**Known issues / things to watch:**
+- All version pins from session 1 still apply.
+- `ExpenseViewModel` filters expenses in memory rather than in SQL. Fine at personal scale (the DAO's date-range queries exist for when it is not), but revisit if the list ever gets large.
+- The dashboard is accumulating cards. PRD 7.1 wants it all visible **without scrolling**, and that constraint has not been checked on a real screen — it needs looking at once calories, water, goals and diary land.
+
+**Next up — Milestone 5: Calorie tracker + dashboard integration**
+1. `CalorieRepository` + `CalorieViewModel`; the `calorie_goal` singleton row is already seeded at 2000 kcal.
+2. Quick-add food name + calories.
+3. Daily total vs target with a progress bar; line chart over 7/30 days.
+4. Dashboard calorie progress bar (PRD 7.1).
 
 ### Session 3 — 2026-08-28
 **Milestone 3 complete.** Dashboard v1, plus the repo is finally under version control.

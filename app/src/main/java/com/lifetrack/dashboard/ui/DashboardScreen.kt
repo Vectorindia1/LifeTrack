@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.navigation.Destination
 import com.lifetrack.core.ui.AppViewModelProvider
+import com.lifetrack.core.ui.Money
 import com.lifetrack.core.ui.theme.LifeTrackTheme
 import com.lifetrack.dashboard.viewmodel.DashboardUiState
 import com.lifetrack.dashboard.viewmodel.DashboardViewModel
@@ -94,6 +95,8 @@ private fun DashboardContent(
                 FirstHabitPrompt(onAddHabit = { onOpen(Destination.Habits) })
             }
         }
+
+        item { SpentTodayCard(uiState = uiState, onOpen = onOpen) }
 
         // Goals, Calories and Water have no bottom-bar tab, so this row is their
         // only way in until milestones 5-7 give them real dashboard sections.
@@ -206,6 +209,44 @@ private fun DashboardHabitRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 12.dp),
             )
+        }
+    }
+}
+
+/** PRD 7.1's "today's spend total". Tapping through opens the full tracker. */
+@Composable
+private fun SpentTodayCard(
+    uiState: DashboardUiState,
+    onOpen: (Destination) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(
+        onClick = { onOpen(Destination.Expenses) },
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.dashboard_spent_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            if (uiState.spentToday > 0.0) {
+                Text(
+                    text = Money.format(uiState.spentToday),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.dashboard_spent_none),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
