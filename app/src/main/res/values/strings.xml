@@ -16,7 +16,6 @@
 
     <!-- Milestone-1 placeholder scaffolding -->
     <string name="placeholder_coming_in_milestone">Coming in milestone %1$d</string>
-    <string name="placeholder_goals_body">Set a target, nudge the number up, see the deadline coming.</string>
     <string name="placeholder_diary_body">One entry a day, a mood tag, and a calendar to look back.</string>
     <string name="placeholder_settings_body">Daily targets, reminder times, habit and category management.</string>
 
@@ -134,4 +133,34 @@
 
     <!-- Dashboard water section -->
     <string name="dashboard_water_title">Water</string>
+    <!-- Goal tracker (milestone 7) -->
+    <string name="goal_add">Add goal</string>
+    <string name="goal_add_title">New goal</string>
+    <string name="goal_name_label">Goal</string>
+    <string name="goal_target_label">Target value</string>
+    <string name="goal_unit_label">Unit (km, books, kg…)</string>
+    <string name="goal_deadline_none">No deadline</string>
+    <string name="goal_deadline_set">Set deadline</string>
+    <string name="goal_deadline_clear">Clear</string>
+    <string name="goal_save">Save</string>
+    <string name="goal_cancel">Cancel</string>
+    <string name="goal_delete">Delete goal</string>
+    <string name="goal_progress">%1$s / %2$s %3$s</string>
+    <string name="goal_days_left">%1$d days left</string>
+    <string name="goal_due_today">Due today</string>
+    <string name="goal_due_tomorrow">Due tomorrow</string>
+    <string name="goal_overdue">%1$d days overdue</string>
+    <string name="goal_complete">Done</string>
+    <string name="goal_active_title">Active</string>
+    <string name="goal_completed_title">Completed</string>
+    <string name="goal_update_title">Update progress</string>
+    <string name="goal_update_value">Current value</string>
+    <string name="goal_increment">+1</string>
+    <string name="goal_set_value">Set</string>
+    <string name="goal_empty_title">No goals yet</string>
+    <string name="goal_empty_body">Set something measurable with a number to reach.</string>
+
+    <!-- Dashboard goals section -->
+    <string name="dashboard_goals_title">Goals</string>
+    <string name="dashboard_goals_see_all">See all</string>
 </resources>

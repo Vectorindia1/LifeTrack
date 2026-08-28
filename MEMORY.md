@@ -204,6 +204,24 @@ The 1.x/2.x examples online do not compile. What works, confirmed by compiling a
 - **What still holds:** the first screenful must carry today's essentials and the one-tap actions. Scrolling is permitted; burying the habit checkboxes or the water quick-add below the fold is not.
 - Practical consequence: milestones 7 and 8 can add goal and diary cards to the dashboard without fighting for vertical space, and the milestone-11 polish pass no longer needs a "make it all fit" step.
 
+### 2026-08-28 (session 7) — Goal rules
+Encoded in `GoalProgress`, pinned by `GoalProgressTest`:
+- **A finished goal is never overdue.** Finishing late is still finishing, and nagging about a completed goal would be actively demoralising.
+- **A goal with no deadline is never overdue and never "near"** — undated goals are aspirations, not obligations.
+- `daysRemaining` is deliberately **not clamped**: 0 = due today, negative = overdue, null = no deadline. The UI branches on those cases; do not "fix" the negative.
+- Reaching the target exactly counts as complete.
+- Dashboard ordering is soonest-deadline-first with **undated goals last**, not interleaved.
+- **`isDeadlineNear(withinDays = 3)` already implements PRD 7.8's goal reminder window.** Milestone 9's notification worker must reuse it rather than reimplementing the window.
+
+### 2026-08-28 (session 7) — Completed goals stay visible in their own section
+- Rather than disappearing when finished, goals move to a "Completed" section.
+- Seeing what you finished is a large part of why goal tracking is motivating; deleting the evidence defeats the purpose. Only the dashboard filters to active goals, because that is a today-focused surface.
+
+### 2026-08-28 (session 7) — Goals join the dashboard's outer combine, not `DayData`
+- `DayData` exists for per-day queries keyed off `today` via `flatMapLatest`. **Goals are not day-scoped** — the goal list is the same regardless of date — so `goalRepository.observeGoals()` is a third argument to the outer `combine` instead.
+- That leaves the outer combine at 3 of its 5 slots, with room for diary in milestone 8. Diary *is* day-scoped, so it belongs in `DayData`.
+- The `Goal → GoalItem` mapping is shared: `goal/viewmodel/toItem(today)` is used by both the goal screen and the dashboard, so progress and deadline maths cannot drift between them.
+
 ---
 
 ## Known Gotchas / Things to Watch

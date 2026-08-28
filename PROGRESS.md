@@ -10,7 +10,7 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 4. Expense tracker + dashboard integration
 - [x] 5. Calorie tracker + dashboard integration
 - [x] 6. Water tracker + dashboard integration
-- [ ] 7. Goal tracker + dashboard integration
+- [x] 7. Goal tracker + dashboard integration
 - [ ] 8. Diary + dashboard integration
 - [ ] 9. Notification system (WorkManager, consolidated daily check)
 - [ ] 10. Settings screen
@@ -20,6 +20,42 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ---
 
 ## Session Log
+
+### Session 7 — 2026-08-28
+**Milestone 7 complete.** Goal tracker plus dashboard integration. Also relaxed the no-scrolling constraint.
+
+**Done this session:**
+- **Relaxed the no-scrolling rule** on your instruction. PRD 7.1, PRD 8 and CLAUDE.md UX principle 2 amended in place with dated notes. No code was needed — every feature screen was already a `LazyColumn` and the dashboard already scrolled. What changed is the constraint that had been imposing a compaction budget on the dashboard. The first screenful must still carry the essentials and the one-tap actions.
+- `GoalProgress` — goal maths as pure functions (fraction, days remaining, overdue, deadline-near, urgency ordering), so the deadline arithmetic is unit-testable.
+- `GoalRepository` + `GoalViewModel`.
+- `GoalScreen`: Active and Completed sections, per-goal progress bar, days-remaining label that distinguishes due-today / due-tomorrow / overdue, **+1 increment and Set-value** update paths (PRD 7.3), and delete.
+- `AddGoalSheet`: name, target value, unit, and an optional deadline via a Material 3 date picker.
+- **Dashboard goals card** — top 3 active goals with progress bars and a "See all" that appears only when there are more (PRD 7.1).
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero warnings**, clean on the first attempt.
+- **47/47 unit tests pass** (16 habit + 9 expense + 5 calorie + 6 water + 11 new goal), via `--rerun-tasks`.
+- String resources audited both ways — clean.
+
+**Decisions recorded in MEMORY.md:**
+- A finished goal is never overdue; an undated goal is never overdue or "near".
+- `daysRemaining` is intentionally unclamped — negative means overdue and the UI relies on it.
+- Completed goals stay visible in their own section rather than vanishing.
+- `isDeadlineNear(3)` already implements PRD 7.8's goal reminder window — milestone 9 must reuse it.
+- Goals join the dashboard's outer combine (not `DayData`) because they are not day-scoped; diary in milestone 8 *is* day-scoped and belongs in `DayData`.
+
+**Known issues / things to watch:**
+- All version pins from session 1 still apply.
+- Calorie and water target dialogs still duplicate what Settings will own in milestone 10.
+- The date picker converts the selected day via UTC, which is how Material 3 reports it. Worth a look on a device when you test, since date pickers are a classic off-by-one source.
+
+**Next up — Milestone 8: Diary + dashboard integration**
+1. `DiaryRepository` + `DiaryViewModel`; the `diary_entries` table has a unique index on date, so one entry per day is already enforced.
+2. Entry editor with the 5 emoji moods from PRD 7.7.
+3. **Auto-prefilled summary line** ("3/4 habits done, ₹450 spent, 1.8L water") — this needs data from habits, expenses, water and calories, so it reuses the repositories rather than adding queries.
+4. Calendar view to browse past entries.
+5. Dashboard: diary streak indicator and a "write today's entry" prompt.
+6. Diary is day-scoped, so it goes in `DayData`.
 
 ### Session 6 — 2026-08-28
 **Milestone 6 complete.** Water tracker with a real progress ring, plus dashboard quick-add.

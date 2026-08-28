@@ -8,8 +8,13 @@ import com.lifetrack.calorie.data.CalorieRepository
 import com.lifetrack.expense.data.Expense
 import com.lifetrack.expense.data.ExpenseRepository
 import com.lifetrack.habit.data.HabitLog
+import com.lifetrack.goal.data.Goal
+import com.lifetrack.goal.data.GoalProgress
+import com.lifetrack.goal.data.GoalRepository
 import com.lifetrack.habit.data.HabitRepository
 import com.lifetrack.habit.data.HabitSchedule
+import com.lifetrack.goal.viewmodel.GoalItem
+import com.lifetrack.goal.viewmodel.toItem
 import com.lifetrack.habit.viewmodel.HabitItem
 import com.lifetrack.water.data.WaterGoal
 import com.lifetrack.water.data.WaterLog
@@ -36,7 +41,11 @@ data class DashboardUiState(
     val calorieTarget: Int = CalorieGoal.DEFAULT_DAILY_TARGET,
     val waterDrunkMl: Int = 0,
     val waterTargetMl: Int = WaterGoal.DEFAULT_DAILY_TARGET_ML,
+    /** Top few active goals, most urgent first. PRD 7.1 asks for 2-3 with a "see all". */
+    val topGoals: List<GoalItem> = emptyList(),
+    val totalActiveGoals: Int = 0,
 ) {
+    val hasMoreGoals: Boolean get() = totalActiveGoals > topGoals.size
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
     val dueCount: Int get() = habitsDueToday.size
     val allDone: Boolean get() = dueCount > 0 && doneCount == dueCount
@@ -77,6 +86,7 @@ class DashboardViewModel(
     private val expenseRepository: ExpenseRepository,
     private val calorieRepository: CalorieRepository,
     private val waterRepository: WaterRepository,
+    private val goalRepository: GoalRepository,
 ) : ViewModel() {
 
     /**
@@ -103,7 +113,8 @@ class DashboardViewModel(
     val uiState: StateFlow<DashboardUiState> = combine(
         habitRepository.observeHabits(),
         dayData,
-    ) { habits, (date, data) ->
+        goalRepository.observeGoals(),
+    ) { habits, (date, data), goals ->
         val completedByHabit = data.completions
             .groupBy { it.habitId }
             .mapValues { (_, entries) -> entries.mapTo(mutableSetOf()) { it.date } }
@@ -130,12 +141,17 @@ class DashboardViewModel(
             calorieTarget = data.calorieGoal?.dailyTarget ?: CalorieGoal.DEFAULT_DAILY_TARGET,
             waterDrunkMl = data.water.sumOf { it.mlAmount },
             waterTargetMl = data.waterGoal?.dailyTargetMl ?: WaterGoal.DEFAULT_DAILY_TARGET_ML,
+            topGoals = activeGoals(goals).take(DASHBOARD_GOALS).map { it.toItem(date) },
+            totalActiveGoals = activeGoals(goals).size,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = DashboardUiState(),
     )
+
+    private fun activeGoals(goals: List<Goal>): List<Goal> =
+        GoalProgress.byUrgency(GoalProgress.active(goals))
 
     /** Call when the screen resumes, so the date is right after midnight. */
     fun refreshDate() {
@@ -148,6 +164,11 @@ class DashboardViewModel(
         viewModelScope.launch {
             habitRepository.setCompleted(item.habit.id, today.value, !item.isDoneToday)
         }
+    }
+
+    private companion object {
+        /** PRD 7.1: "top 2-3" active goals on the dashboard. */
+        const val DASHBOARD_GOALS = 3
     }
 
     /** Quick-add water without leaving the dashboard — PRD 7.1's +250/+500 buttons. */

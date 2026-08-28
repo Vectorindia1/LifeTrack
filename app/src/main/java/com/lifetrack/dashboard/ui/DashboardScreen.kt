@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,6 +43,7 @@ import com.lifetrack.core.ui.theme.LifeTrackTheme
 import com.lifetrack.dashboard.viewmodel.DashboardUiState
 import com.lifetrack.dashboard.viewmodel.DashboardViewModel
 import com.lifetrack.core.ui.ProgressRing
+import com.lifetrack.goal.viewmodel.GoalItem
 import com.lifetrack.habit.viewmodel.HabitItem
 import com.lifetrack.water.ui.WaterQuickAddRow
 import java.time.format.DateTimeFormatter
@@ -106,6 +108,10 @@ private fun DashboardContent(
         item { CaloriesCard(uiState = uiState, onOpen = onOpen) }
 
         item { SpentTodayCard(uiState = uiState, onOpen = onOpen) }
+
+        if (uiState.topGoals.isNotEmpty()) {
+            item { GoalsCard(uiState = uiState, onOpen = onOpen) }
+        }
 
         // Goals, Calories and Water have no bottom-bar tab, so this row is their
         // only way in until milestones 5-7 give them real dashboard sections.
@@ -367,6 +373,69 @@ private fun SpentTodayCard(
                 )
             }
         }
+    }
+}
+
+/** PRD 7.1's "active goals with progress bars (top 2-3, see all for the rest)". */
+@Composable
+private fun GoalsCard(
+    uiState: DashboardUiState,
+    onOpen: (Destination) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.dashboard_goals_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (uiState.hasMoreGoals) {
+                    TextButton(onClick = { onOpen(Destination.Goals) }) {
+                        Text(stringResource(R.string.dashboard_goals_see_all))
+                    }
+                }
+            }
+            uiState.topGoals.forEach { item -> DashboardGoalRow(item) }
+        }
+    }
+}
+
+@Composable
+private fun DashboardGoalRow(item: GoalItem, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = item.goal.name,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "${(item.fraction * 100).toInt()}%",
+                style = MaterialTheme.typography.labelMedium,
+                color = if (item.isOverdue) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
+        LinearProgressIndicator(
+            progress = { item.fraction },
+            modifier = Modifier.fillMaxWidth(),
+            color = if (item.isOverdue) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.primary
+            },
+        )
     }
 }
 
