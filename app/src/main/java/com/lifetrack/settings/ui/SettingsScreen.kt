@@ -20,6 +20,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Notifications
@@ -75,6 +76,40 @@ fun SettingsScreen(
     var editingTime by remember { mutableStateOf<NotificationSettings?>(null) }
     var renaming by remember { mutableStateOf<CategoryUsage?>(null) }
 
+    // Backup/restore: the export launcher gets the JSON handed to it only once the
+    // user has actually picked a save location, so nothing is generated for nothing.
+    // Import holds the file's content in `pendingImportJson` until the user confirms
+    // the destructive replace in the dialog below — reading the file is not itself
+    // destructive, so that part runs immediately.
+    var pendingImportJson by remember { mutableStateOf<String?>(null) }
+    var backupStatus by remember { mutableStateOf<String?>(null) }
+
+    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        viewModel.exportBackup { json ->
+            backupStatus = try {
+                context.contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
+                context.getString(R.string.settings_backup_success_export)
+            } catch (error: Exception) {
+                context.getString(R.string.settings_backup_error_generic)
+            }
+        }
+    }
+
+    val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val json = try {
+            context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+        } catch (error: Exception) {
+            null
+        }
+        if (json != null) pendingImportJson = json else backupStatus = context.getString(R.string.settings_backup_error_generic)
+    }
+
     // Refreshed on resume, not just once: the only way a denied permission changes is
     // the user granting it from system settings and coming back to this screen.
     var notificationsEnabled by remember { mutableStateOf(com.lifetrack.notification.Notifier.canPost(context)) }
@@ -109,6 +144,12 @@ fun SettingsScreen(
             context.startActivity(intent)
         },
         onSendTestNotification = viewModel::sendTestNotification,
+        backupStatus = backupStatus,
+        onExport = {
+            val fileName = "lifetrack-backup-${java.time.LocalDate.now()}.json"
+            exportLauncher.launch(fileName)
+        },
+        onImport = { importLauncher.launch(arrayOf("application/json")) },
         contentPadding = contentPadding,
         modifier = modifier,
     )
@@ -156,6 +197,31 @@ fun SettingsScreen(
             },
         )
     }
+
+    pendingImportJson?.let { json ->
+        AlertDialog(
+            onDismissRequest = { pendingImportJson = null },
+            title = { Text(stringResource(R.string.settings_backup_confirm_title)) },
+            text = { Text(stringResource(R.string.settings_backup_confirm_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.importBackup(json) { error ->
+                            backupStatus = error ?: context.getString(R.string.settings_backup_success_import)
+                        }
+                        pendingImportJson = null
+                    },
+                ) {
+                    Text(stringResource(R.string.settings_backup_confirm_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingImportJson = null }) {
+                    Text(stringResource(R.string.settings_cancel))
+                }
+            },
+        )
+    }
 }
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -175,6 +241,9 @@ private fun SettingsContent(
     onDisplayName: (String?) -> Unit,
     onOpenNotificationSettings: () -> Unit,
     onSendTestNotification: () -> Unit,
+    backupStatus: String?,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -491,6 +560,38 @@ private fun SettingsContent(
                             )
                         }
                     }
+                }
+            }
+        }
+
+        item {
+            SettingsCard(
+                stringResource(R.string.settings_backup),
+                icon = Icons.Filled.Backup,
+                accent = MaterialTheme.colorScheme.primary,
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_backup_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(onClick = onExport, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.settings_backup_export))
+                    }
+                    androidx.compose.material3.OutlinedButton(onClick = onImport, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.settings_backup_import))
+                    }
+                }
+                backupStatus?.let { status ->
+                    Text(
+                        text = status,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         }

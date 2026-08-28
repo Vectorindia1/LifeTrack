@@ -37,6 +37,9 @@ class AppContainer(context: Context) {
         PreferencesRepository(database.appPreferencesDao())
     }
     val periodRepository: PeriodRepository by lazy { PeriodRepository(database.periodDao()) }
+    val backupRepository: com.lifetrack.backup.data.BackupRepository by lazy {
+        com.lifetrack.backup.data.BackupRepository(database)
+    }
     val notificationSettingsRepository: NotificationSettingsRepository by lazy {
         NotificationSettingsRepository(notificationSettingsDao)
     }

@@ -48,6 +48,7 @@ class SettingsViewModel(
     private val notificationRepository: NotificationSettingsRepository,
     private val habitRepository: HabitRepository,
     private val expenseRepository: ExpenseRepository,
+    private val backupRepository: com.lifetrack.backup.data.BackupRepository,
 ) : ViewModel() {
 
     private val targets = combine(
@@ -91,6 +92,16 @@ class SettingsViewModel(
 
     fun setCurrency(option: com.lifetrack.core.ui.CurrencyOption) {
         viewModelScope.launch { preferencesRepository.setCurrencyLocaleTag(option.tag) }
+    }
+
+    /** Builds the full-database backup JSON and hands it to the caller to write to disk. */
+    fun exportBackup(onExported: (String) -> Unit) {
+        viewModelScope.launch { onExported(backupRepository.export()) }
+    }
+
+    /** @param onResult a human-readable error, or null on success — see [BackupRepository.import]. */
+    fun importBackup(json: String, onResult: (String?) -> Unit) {
+        viewModelScope.launch { onResult(backupRepository.import(json)) }
     }
 
     /** Re-applies scheduling immediately, same as a reminder-time edit does for the digest. */

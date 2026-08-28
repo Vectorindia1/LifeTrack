@@ -51,6 +51,7 @@ object AppViewModelProvider {
                 notificationRepository = app.container.notificationSettingsRepository,
                 habitRepository = app.container.habitRepository,
                 expenseRepository = app.container.expenseRepository,
+                backupRepository = app.container.backupRepository,
             )
         }
         initializer { GoalViewModel(lifeTrackApplication().container.goalRepository) }

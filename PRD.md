@@ -139,6 +139,13 @@ Added by user request: a recurring "drink water" nudge every N minutes, **separa
 - **This is a deliberate, acknowledged exception to section 8's "never more than ~3 pushes/day" rule and to 7.8's "one consolidated notification" principle** — made because the user explicitly asked for a repeating alert, not a daily summary. It does not change the digest's behavior; the two systems are independent. See MEMORY.md.
 - Implemented as a `PeriodicWorkRequest`, not an `AlarmManager` exact alarm — the latter needs `SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM`, both subject to Play Store policy review intended for actual alarm-clock apps. The trade-off is the OS may shift the exact firing minute by a few minutes around Doze; acceptable for a "roughly every N minutes" reminder.
 
+### 7.13 Backup and Restore (added 2026-08-29, post-v1)
+Added by user request — a safety net against losing data across an app update, reinstall, or device change. Resolves PRD section 9's stretch "CSV export" goal with something more complete: a full-database export, not one tracker's worth of rows.
+- **Export**: one JSON file covering every table (habits, habit logs, goals, expenses, calorie logs and target, water logs and target, diary entries, notification settings, app preferences, period logs). Saved wherever the user picks via the standard Android file picker.
+- **Import**: reads that same file back and **replaces** everything currently in the app with it. This is explicitly destructive and requires confirmation — it is a restore, not a merge.
+- Nothing is changed if the file is unreadable, damaged, or from an incompatible export format — the whole file is parsed and validated before any existing data is touched.
+- No account, cloud storage, or network involved — the exported file is just a file, kept wherever the user's phone lets them save one. Consistent with section 8's fully-offline requirement.
+
 ### 7.9 Settings
 - Set daily targets (calories, water, ml increments)
 - Configure notification times / toggle categories
@@ -175,6 +182,7 @@ Added by user request: a recurring "drink water" nudge every N minutes, **separa
 13. Period tracker (added 2026-08-29, post-v1 — see section 7.10)
 14. Home screen widget (added 2026-08-29, post-v1 — see section 7.11)
 15. Interval water reminder (added 2026-08-29, post-v1 — see section 7.12)
+16. Backup and restore (added 2026-08-29, post-v1 — see section 7.13)
 
 ## 11. Open Questions
 - Should habit "frequency" support custom day-of-week schedules in v1, or just daily/weekly?

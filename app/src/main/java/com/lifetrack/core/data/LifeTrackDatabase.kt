@@ -60,6 +60,7 @@ abstract class LifeTrackDatabase : RoomDatabase() {
     abstract fun notificationSettingsDao(): NotificationSettingsDao
     abstract fun appPreferencesDao(): AppPreferencesDao
     abstract fun periodDao(): com.lifetrack.period.data.PeriodDao
+    abstract fun backupDao(): com.lifetrack.backup.data.BackupDao
 
     companion object {
         const val DATABASE_NAME = "lifetrack.db"

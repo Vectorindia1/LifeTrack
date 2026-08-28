@@ -19,10 +19,28 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 13. Period tracker (added 2026-08-29, post-v1)
 - [x] 14. Home screen widget (added 2026-08-29, post-v1)
 - [x] 15. Interval water reminder (added 2026-08-29, post-v1)
+- [x] 16. Backup and restore (added 2026-08-29, post-v1)
 
 ---
 
 ## Session Log
+
+### Session 12 (continued 4) — 2026-08-29
+Full backup/restore, by request — "if I update the application and data erases I can just import the exported data and everything is back as it was."
+
+**Done:**
+- `BackupDao` — one Dao spanning every table's get-all/insert-all/clear, kept separate from the 8 per-feature DAOs.
+- `BackupCodec` — hand-written JSON mapping for all 12 entities, same date/time conventions Room's own `Converters.kt` already uses.
+- `BackupRepository.export()`/`.import()` — a single JSON file covering every table; import fully parses and validates the file before clearing anything, and the whole clear-then-restore runs in one transaction so a failure can't leave the database half-restored.
+- Settings gained a "Backup and restore" card: Export/Import buttons via the standard Android file picker (Storage Access Framework — no storage permission needed), a confirmation dialog before import (since it's a destructive full replace), and a status line.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, zero warnings, clean on the first attempt. 82/82 tests pass (unchanged).
+- Every field in `BackupCodec` manually cross-checked against its entity's actual definition.
+- **Discovered and documented a real testing limitation**: `org.json` throws `RuntimeException` under plain JVM unit tests (confirmed empirically with a throwaway test, then removed) — it's stubbed outside a real Android runtime or Robolectric, unlike most `org.json` usage elsewhere in the Android ecosystem. This is the first piece of business logic this project could not get automated test coverage for; documented honestly in MEMORY.md rather than silently skipped or faked.
+
+**Not verified:** the entire export → reinstall → import round trip has never run on a device. This is arguably the single most important thing to test before trusting it as a real safety net — do it once deliberately (export, note some data, wipe the app's storage or reinstall, import, confirm everything matches) rather than assuming it works from a clean compile.
+
 
 ### Session 12 (continued 3) — 2026-08-29
 Two more post-v1 features by request: a home screen widget, and an interval water reminder.
