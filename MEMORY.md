@@ -246,6 +246,32 @@ Encoded in `GoalProgress`, pinned by `GoalProgressTest`:
 - All six sections exist: habits, water (with quick-add), calories, spend, goals, diary.
 - `refreshDate` on the diary only follows the clock past midnight **if the user was looking at today** — otherwise it would yank them off a past date they were deliberately reading.
 
+### 2026-08-28 (session 9) — How "one consolidated notification" is actually enforced
+PRD 7.8 demands ONE digest, but its own table lists **six** default check times (09:00, 14:00, 18:00, 20:00, 20:30, 21:30) while PRD 8 caps things at "~3 pushes/day". Those pull against each other. Resolved as:
+- **One fixed notification id (1001).** Every check updates the same notification instead of stacking, so there is never more than one LifeTrack notification on the device. This is the structural guarantee — even a bug in the scheduling cannot produce a pile of notifications.
+- **`setOnlyAlertOnce(true)`.** The first check of the day alerts; later ones update the text silently. That is how six check *times* stay within three felt *interruptions*.
+- **`IMPORTANCE_LOW`** channel: no sound by default. This is a gentle nudge app.
+- **An empty digest posts nothing.** Silence is the correct output when the user is on top of everything.
+- **Do not add per-event notifications.** This has been an explicit product requirement since session 0 and is now structurally enforced by the single id.
+
+### 2026-08-28 (session 9) — Chained one-shot workers, not PeriodicWorkRequest
+- The check times are irregular times of day, which a fixed repeat interval cannot express. So each `DailyDigestWorker` run schedules its successor via `DigestScheduler.scheduleNext`.
+- Rescheduling happens in a **`finally`**, so a failed run still arms the next one — one bad run can never silently end all future reminders.
+- `enqueueUniqueWork(REPLACE)` makes scheduling idempotent, so `LifeTrackApplication.onCreate` re-arming on every launch is safe and also repairs a broken chain.
+- **The worker returns `success` even on error, never `retry`.** The `finally` re-enqueues the unique work with REPLACE, which would cancel a retry anyway; missing one check is harmless because the next one re-reads the same state.
+- **Settings changes need no extra plumbing** — the next run reads `notification_settings` fresh. Milestone 10 only has to call `DigestScheduler.scheduleNext` after saving.
+
+### 2026-08-28 (session 9) — Digest thresholds, chosen not derived
+PRD 7.8 states the triggers but not the numbers. These are in `DailyDigest`, pinned by tests:
+- **Calories "under"** = below **80%** of target (`UNDER_TARGET_FRACTION`). Without a threshold, any day not landing exactly on target would nag. "Over" is any amount above target.
+- **Water "behind expected pace"** = below a **linear ramp across an 08:00–22:00 waking window**. At the 14:00 check that expects ~43% of the target; at 18:00, ~71%. Water is not expected to be drunk uniformly across 24 hours.
+- A feature with **no target set** (0) never nags — no target means no opinion.
+- A feature contributes only once one of its reminder times has **already passed today**.
+
+### 2026-08-28 (session 9) — POST_NOTIFICATIONS is the app's only permission
+- Requested once on first launch (API 33+). **Nothing is gated on the answer**: refusing means no digest, and every tracker still works exactly as before, so the result is ignored rather than re-prompted.
+- `INTERNET` is still absent — verified in the built APK. PRD 8's offline requirement continues to hold.
+
 ---
 
 ## Known Gotchas / Things to Watch

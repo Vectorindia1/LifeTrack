@@ -12,7 +12,7 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 6. Water tracker + dashboard integration
 - [x] 7. Goal tracker + dashboard integration
 - [x] 8. Diary + dashboard integration
-- [ ] 9. Notification system (WorkManager, consolidated daily check)
+- [x] 9. Notification system (WorkManager, consolidated daily check)
 - [ ] 10. Settings screen
 - [ ] 11. Polish (theming, empty states, animations, dark mode)
 - [ ] 12. (Stretch) CSV export
@@ -20,6 +20,47 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ---
 
 ## Session Log
+
+### Session 9 — 2026-08-28
+**Milestone 9 complete.** Consolidated daily notification digest via WorkManager.
+
+**Done this session:**
+- `DailyDigest` — the whole decision of *what to say* as pure functions, so notification **content** is unit-testable even though the job fires once a day.
+- `DailyDigestWorker` — reads every tracker, builds one digest, posts one notification, then schedules its own successor.
+- `DigestScheduler` — a chain of one-shot workers rather than `PeriodicWorkRequest`, because the check times are irregular times of day.
+- `Notifier` — one fixed notification id, `setOnlyAlertOnce`, low-importance channel, taps through to the app.
+- `NotificationSettingsRepository` over the row set seeded back in milestone 1.
+- `POST_NOTIFICATIONS` permission plus a first-launch runtime request.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero warnings**.
+- **69/69 unit tests pass** — 14 new ones covering the digest: nothing unmet produces no notification, features stay silent before their reminder time, a disabled feature contributes nothing, everything unmet consolidates into ONE list of five concerns rather than five notifications, the calorie under-threshold, the water pace ramp, and the scheduling roll-over to tomorrow.
+- APK inspected: `POST_NOTIFICATIONS` merged, and **still no `INTERNET`** — the offline guarantee holds.
+
+**How the PRD's own tension was resolved:**
+PRD 7.8 demands ONE notification but lists six default check times, while PRD 8 caps at "~3 pushes/day". A single fixed notification id means checks *update* one notification rather than stacking, and `setOnlyAlertOnce` means only the first alerts. Six check times, one notification, one interruption. Reasoning recorded in MEMORY.md.
+
+**Still not verified — and this milestone is the least verifiable yet:**
+- Scheduling **cannot** be proven by compiling. The digest content is tested; whether WorkManager actually fires at 20:00 tomorrow is not, and cannot be without running it.
+- Also unverified on a device: the runtime permission dialog, the notification's appearance, and whether the chain survives a reboot.
+- **To test quickly:** change a reminder time to a couple of minutes ahead once Settings lands (milestone 10), or temporarily shorten the delay in `DigestScheduler`.
+
+**Decisions recorded in MEMORY.md:**
+- How the one-notification guarantee is structurally enforced.
+- Chained one-shot workers, rescheduling in `finally`, and why the worker never returns `retry`.
+- The digest thresholds (calories under 80%, water on an 08:00–22:00 ramp) — chosen, not derived from the PRD, which states triggers but no numbers.
+- `POST_NOTIFICATIONS` is the only permission, and nothing is gated on it.
+
+**Known issues / things to watch:**
+- All version pins from session 1 still apply.
+- Calorie and water target dialogs still duplicate what Settings will own next.
+
+**Next up — Milestone 10: Settings screen**
+1. Daily targets for calories and water — **and move the two temporary dialogs there**, deciding whether to keep the shortcuts.
+2. Reminder times and per-category enable/disable, writing to `notification_settings`; call `DigestScheduler.scheduleNext` after saving.
+3. Manage habits and expense categories.
+4. Light/dark theme toggle (currently follows the system).
+5. CSV export is milestone 12 and explicitly a stretch goal.
 
 ### Session 8 — 2026-08-28
 **Milestone 8 complete.** Diary, and with it the PRD 7.1 dashboard is fully populated.

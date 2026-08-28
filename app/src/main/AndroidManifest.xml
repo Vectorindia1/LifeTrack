@@ -4,8 +4,11 @@
     <!--
       No INTERNET permission by design: PRD section 8 requires the app to be
       fully offline for v1. Do not add network permissions.
-      POST_NOTIFICATIONS arrives with Milestone 9, not before.
     -->
+
+    <!-- Required from API 33 to post the daily digest (PRD 7.8). Requested at
+         runtime the first time the app opens. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".LifeTrackApplication"

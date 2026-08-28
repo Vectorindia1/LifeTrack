@@ -6,6 +6,7 @@ import com.lifetrack.diary.data.DiaryRepository
 import com.lifetrack.expense.data.ExpenseRepository
 import com.lifetrack.goal.data.GoalRepository
 import com.lifetrack.habit.data.HabitRepository
+import com.lifetrack.notification.data.NotificationSettingsRepository
 import com.lifetrack.water.data.WaterRepository
 
 /**
@@ -31,4 +32,7 @@ class AppContainer(context: Context) {
     val waterRepository: WaterRepository by lazy { WaterRepository(waterDao) }
     val goalRepository: GoalRepository by lazy { GoalRepository(goalDao) }
     val diaryRepository: DiaryRepository by lazy { DiaryRepository(diaryDao) }
+    val notificationSettingsRepository: NotificationSettingsRepository by lazy {
+        NotificationSettingsRepository(notificationSettingsDao)
+    }
 }

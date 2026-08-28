@@ -182,4 +182,15 @@
     <string name="dashboard_diary_title">Diary</string>
     <string name="dashboard_diary_prompt">Write today\'s entry</string>
     <string name="dashboard_diary_done">Written today</string>
+    <!-- Notifications (milestone 9) -->
+    <string name="notif_channel_name">Daily reminders</string>
+    <string name="notif_channel_desc">One consolidated reminder covering anything you haven\'t logged yet.</string>
+    <string name="notif_title">Today\'s check-in</string>
+    <string name="notif_habits">%1$d of %2$d habits done</string>
+    <string name="notif_goals_one">%1$s is due soon</string>
+    <string name="notif_goals_many">%1$d goals due soon</string>
+    <string name="notif_calories_under">%1$d of %2$d kcal logged</string>
+    <string name="notif_calories_over">%1$d kcal, over your %2$d target</string>
+    <string name="notif_water">%1$d of %2$d ml water</string>
+    <string name="notif_diary">Diary not written yet</string>
 </resources>
