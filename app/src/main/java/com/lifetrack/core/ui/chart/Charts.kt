@@ -2,12 +2,13 @@ package com.lifetrack.core.ui.chart
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -40,6 +41,9 @@ import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 /** One data point: a bar/point value and the label under it. */
 data class ChartPoint(val label: String, val value: Double)
 
+/** Bars get slightly rounded tops rather than hard rectangles — a small but visible polish touch. */
+private val BarShape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
+
 @Composable
 fun SimpleBarChart(
     points: List<ChartPoint>,
@@ -67,7 +71,7 @@ fun SimpleBarChart(
                     rememberLineComponent(
                         fill = Fill(color),
                         thickness = 16.dp,
-                        shape = RectangleShape,
+                        shape = BarShape,
                     ),
                 ),
             ),
@@ -106,6 +110,15 @@ fun SimpleLineChart(
     }
 
     val labels = points.map { it.label }
+    // A soft gradient fill under the line, fading to nothing — the "area chart" look
+    // from the design reference, without turning this into a second chart type.
+    val areaFill = remember(color) {
+        Fill(
+            Brush.verticalGradient(
+                colors = listOf(color.copy(alpha = 0.32f), color.copy(alpha = 0f)),
+            ),
+        )
+    }
 
     CartesianChartHost(
         chart = rememberCartesianChart(
@@ -113,6 +126,7 @@ fun SimpleLineChart(
                 lineProvider = LineCartesianLayer.LineProvider.series(
                     LineCartesianLayer.rememberLine(
                         fill = LineCartesianLayer.LineFill.single(Fill(color)),
+                        areaFill = LineCartesianLayer.AreaFill.single(areaFill),
                     ),
                 ),
             ),

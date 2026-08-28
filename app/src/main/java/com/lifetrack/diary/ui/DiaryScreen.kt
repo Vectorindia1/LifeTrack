@@ -35,6 +35,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.ui.AppViewModelProvider
 import com.lifetrack.core.ui.Money
+import com.lifetrack.core.ui.StatTile
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.FeatureGlyphs
+import com.lifetrack.core.ui.theme.resolved
 import com.lifetrack.diary.data.DaySummary
 import com.lifetrack.diary.data.Mood
 import com.lifetrack.diary.viewmodel.DiaryUiState
@@ -138,6 +142,48 @@ private fun DiaryContent(
     }
 }
 
+/** The numbers behind the auto-prefilled summary line, shown as tiles rather than text. */
+@Composable
+private fun TodaySummaryRow(summary: DaySummary, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        if (summary.habitsDue > 0) {
+            StatTile(
+                icon = FeatureGlyphs.Habit.icon,
+                value = "${summary.habitsDone}/${summary.habitsDue}",
+                label = stringResource(R.string.diary_stat_habits),
+                accent = Accents.Habit.resolved,
+            )
+        }
+        if (summary.spent > 0.0) {
+            StatTile(
+                icon = FeatureGlyphs.Expense.icon,
+                value = Money.format(summary.spent),
+                label = stringResource(R.string.diary_stat_spent),
+                accent = Accents.Expense.resolved,
+            )
+        }
+        if (summary.calories > 0) {
+            StatTile(
+                icon = FeatureGlyphs.Calorie.icon,
+                value = summary.calories.toString(),
+                label = stringResource(R.string.diary_stat_calories),
+                accent = Accents.Calorie.resolved,
+            )
+        }
+        if (summary.waterMl > 0) {
+            StatTile(
+                icon = FeatureGlyphs.Water.icon,
+                value = String.format(java.util.Locale.getDefault(), "%.1fL", summary.waterMl / 1000.0),
+                label = stringResource(R.string.diary_stat_water),
+                accent = Accents.Water.resolved,
+            )
+        }
+    }
+}
+
 @Composable
 private fun StreakHeader(uiState: DiaryUiState, modifier: Modifier = Modifier) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -198,6 +244,10 @@ private fun EntryEditor(
                         )
                     }
                 }
+            }
+
+            if (!uiState.summary.isEmpty) {
+                TodaySummaryRow(uiState.summary)
             }
 
             Text(

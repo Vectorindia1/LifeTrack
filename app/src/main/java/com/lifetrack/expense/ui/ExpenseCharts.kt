@@ -1,6 +1,7 @@
 package com.lifetrack.expense.ui
 
-import androidx.compose.material3.MaterialTheme
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.resolved
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.lifetrack.core.ui.Money
@@ -18,7 +19,7 @@ fun CategoryBarChart(
 ) {
     SimpleBarChart(
         points = totals.map { ChartPoint(it.category, it.total) },
-        color = MaterialTheme.colorScheme.primary,
+        color = Accents.Expense.resolved,
         yFormatter = Money::formatCompact,
         modifier = modifier,
     )
@@ -32,7 +33,7 @@ fun SpendLineChart(
 ) {
     SimpleLineChart(
         points = points.map { ChartPoint(it.label, it.total) },
-        color = MaterialTheme.colorScheme.tertiary,
+        color = Accents.Expense.resolved,
         yFormatter = Money::formatCompact,
         modifier = modifier,
     )

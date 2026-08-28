@@ -48,6 +48,10 @@ import com.lifetrack.calorie.data.CalorieLog
 import com.lifetrack.calorie.viewmodel.CalorieSpan
 import com.lifetrack.calorie.viewmodel.CalorieUiState
 import com.lifetrack.calorie.viewmodel.CalorieViewModel
+import com.lifetrack.core.ui.IconBadge
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.FeatureGlyphs
+import com.lifetrack.core.ui.theme.resolved
 import com.lifetrack.core.ui.AppViewModelProvider
 import com.lifetrack.core.ui.chart.ChartPoint
 import com.lifetrack.core.ui.chart.SimpleLineChart
@@ -162,12 +166,14 @@ private fun TargetCard(
     onEditTarget: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Calorie.resolved
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                IconBadge(icon = FeatureGlyphs.Calorie.icon, tint = accent)
                 Text(
                     text = stringResource(
                         R.string.calorie_eaten_of_target,
@@ -175,7 +181,9 @@ private fun TargetCard(
                         uiState.target,
                     ),
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp),
                 )
                 TextButton(onClick = onEditTarget) {
                     Text(stringResource(R.string.calorie_target_edit))
@@ -185,11 +193,7 @@ private fun TargetCard(
             LinearProgressIndicator(
                 progress = { uiState.progress },
                 modifier = Modifier.fillMaxWidth(),
-                color = if (uiState.isOverTarget) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
+                color = if (uiState.isOverTarget) MaterialTheme.colorScheme.error else accent,
             )
 
             Text(
@@ -247,7 +251,7 @@ private fun HistoryCard(
                 points = uiState.history.map {
                     ChartPoint(it.date.dayOfMonth.toString(), it.total.toDouble())
                 },
-                color = MaterialTheme.colorScheme.tertiary,
+                color = Accents.Calorie.resolved,
             )
         }
     }

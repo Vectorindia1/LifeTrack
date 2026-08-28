@@ -43,7 +43,7 @@ import com.lifetrack.water.data.WaterLog
         NotificationSettings::class,
         AppPreferences::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -72,7 +72,7 @@ abstract class LifeTrackDatabase : RoomDatabase() {
         private fun build(context: Context): LifeTrackDatabase =
             Room.databaseBuilder(context, LifeTrackDatabase::class.java, DATABASE_NAME)
                 .addCallback(SeedCallback)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
 
         /**
@@ -138,6 +138,17 @@ abstract class LifeTrackDatabase : RoomDatabase() {
                         arrayOf<Any>(feature, time),
                     )
                 }
+            }
+        }
+
+        /**
+         * v2 -> v3: adds the nullable `displayName` column to `app_preferences` for
+         * the milestone-11 dashboard greeting. A plain ADD COLUMN — existing rows get
+         * NULL, matching the Kotlin default, so no backfill is needed.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE app_preferences ADD COLUMN displayName TEXT")
             }
         }
 

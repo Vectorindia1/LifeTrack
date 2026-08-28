@@ -18,6 +18,10 @@ class PreferencesRepository(private val dao: AppPreferencesDao) {
         )
     }
 
+    suspend fun setDisplayName(name: String?) = update {
+        it.copy(displayName = name?.trim()?.ifBlank { null })
+    }
+
     private suspend fun update(transform: (AppPreferences) -> AppPreferences) {
         dao.upsert(transform(preferences.first()))
     }

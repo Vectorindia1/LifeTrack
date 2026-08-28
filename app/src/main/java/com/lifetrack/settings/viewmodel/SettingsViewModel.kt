@@ -80,6 +80,10 @@ class SettingsViewModel(
         initialValue = SettingsUiState(),
     )
 
+    fun setDisplayName(name: String?) {
+        viewModelScope.launch { preferencesRepository.setDisplayName(name) }
+    }
+
     fun setTheme(mode: ThemeMode) {
         viewModelScope.launch { preferencesRepository.setThemeMode(mode) }
     }

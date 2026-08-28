@@ -2,25 +2,21 @@ package com.lifetrack.dashboard.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AssistChip
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -38,14 +34,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.navigation.Destination
 import com.lifetrack.core.ui.AppViewModelProvider
+import com.lifetrack.core.ui.GreetingPeriod
+import com.lifetrack.core.ui.IconBadge
 import com.lifetrack.core.ui.Money
+import com.lifetrack.core.ui.ProgressRing
+import com.lifetrack.core.ui.greetingFor
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.FeatureGlyphs
 import com.lifetrack.core.ui.theme.LifeTrackTheme
+import com.lifetrack.core.ui.theme.goalAccent
+import com.lifetrack.core.ui.theme.resolved
 import com.lifetrack.dashboard.viewmodel.DashboardUiState
 import com.lifetrack.dashboard.viewmodel.DashboardViewModel
-import com.lifetrack.core.ui.ProgressRing
 import com.lifetrack.goal.viewmodel.GoalItem
 import com.lifetrack.habit.viewmodel.HabitItem
 import com.lifetrack.water.ui.WaterQuickAddRow
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -93,7 +97,7 @@ private fun DashboardContent(
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { DateHeader(uiState) }
+        item { GreetingHeader(uiState) }
 
         item {
             if (uiState.hasAnyHabit) {
@@ -114,26 +118,53 @@ private fun DashboardContent(
         }
 
         item { DiaryCard(uiState = uiState, onOpen = onOpen) }
-
-        // Goals, Calories and Water have no bottom-bar tab, so this row is their
-        // only way in until milestones 5-7 give them real dashboard sections.
-        item { MoreTrackers(onOpen = onOpen) }
     }
 }
 
 @Composable
-private fun DateHeader(uiState: DashboardUiState, modifier: Modifier = Modifier) {
-    val formatter = remember { DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault()) }
+private fun GreetingHeader(uiState: DashboardUiState, modifier: Modifier = Modifier) {
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault()) }
+    val greetingRes = when (greetingFor(LocalTime.now().hour)) {
+        GreetingPeriod.MORNING -> R.string.dashboard_greeting_morning
+        GreetingPeriod.AFTERNOON -> R.string.dashboard_greeting_afternoon
+        GreetingPeriod.EVENING -> R.string.dashboard_greeting_evening
+        GreetingPeriod.NIGHT -> R.string.dashboard_greeting_night
+    }
+    val greeting = stringResource(greetingRes)
+    val name = uiState.displayName
+
     Column(modifier = modifier) {
         Text(
-            text = stringResource(R.string.dashboard_title),
-            style = MaterialTheme.typography.headlineMedium,
+            text = if (name != null) "$greeting, $name 👋" else "$greeting 👋",
+            style = MaterialTheme.typography.headlineSmall,
         )
         Text(
-            text = uiState.date.format(formatter),
+            text = "${stringResource(R.string.dashboard_subtitle)} · ${uiState.date.format(dateFormatter)}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** A card header: an [IconBadge], a title, and optional trailing content. */
+@Composable
+private fun CardHeader(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    accent: androidx.compose.ui.graphics.Color,
+    title: String,
+    modifier: Modifier = Modifier,
+    trailing: @Composable () -> Unit = {},
+) {
+    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        IconBadge(icon = icon, tint = accent)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 12.dp),
+        )
+        trailing()
     }
 }
 
@@ -143,19 +174,17 @@ private fun HabitsCard(
     onToggle: (HabitItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Habit.resolved
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(vertical = 12.dp)) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            CardHeader(
+                icon = FeatureGlyphs.Habit.icon,
+                accent = accent,
+                title = stringResource(R.string.dashboard_habits_title),
             ) {
-                Text(
-                    text = stringResource(R.string.dashboard_habits_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
                 Text(
                     text = stringResource(
                         R.string.dashboard_habits_count,
@@ -163,11 +192,7 @@ private fun HabitsCard(
                         uiState.dueCount,
                     ),
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (uiState.allDone) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    color = if (uiState.allDone) accent else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -176,18 +201,16 @@ private fun HabitsCard(
                     text = stringResource(R.string.dashboard_nothing_due),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             } else {
                 uiState.habitsDueToday.forEach { item ->
-                    DashboardHabitRow(item = item, onToggle = { onToggle(item) })
+                    DashboardHabitRow(item = item, accent = accent, onToggle = { onToggle(item) })
                 }
                 if (uiState.allDone) {
                     Text(
                         text = stringResource(R.string.dashboard_all_done),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        color = accent,
                     )
                 }
             }
@@ -199,13 +222,12 @@ private fun HabitsCard(
 @Composable
 private fun DashboardHabitRow(
     item: HabitItem,
+    accent: androidx.compose.ui.graphics.Color,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val toggleLabel = stringResource(R.string.habit_toggle_desc, item.habit.name)
@@ -223,8 +245,7 @@ private fun DashboardHabitRow(
             Text(
                 text = "🔥 ${item.streak}",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(end = 12.dp),
+                color = accent,
             )
         }
     }
@@ -243,6 +264,7 @@ private fun WaterCard(
     onOpen: (Destination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Water.resolved
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -253,9 +275,9 @@ private fun WaterCard(
         ) {
             ProgressRing(
                 progress = uiState.waterProgress,
-                size = 72.dp,
-                thickness = 8.dp,
-                color = MaterialTheme.colorScheme.tertiary,
+                size = 76.dp,
+                thickness = 9.dp,
+                color = accent,
             ) {
                 Text(
                     text = "${(uiState.waterProgress * 100).toInt()}%",
@@ -277,11 +299,7 @@ private fun WaterCard(
                         uiState.waterTargetMl,
                     ),
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (uiState.isWaterGoalMet) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    color = if (uiState.isWaterGoalMet) accent else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 WaterQuickAddRow(
                     smallMl = uiState.waterIncrementSmallMl,
@@ -301,20 +319,20 @@ private fun CaloriesCard(
     onOpen: (Destination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Calorie.resolved
     ElevatedCard(
         onClick = { onOpen(Destination.Calories) },
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.dashboard_calories_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
+            CardHeader(
+                icon = FeatureGlyphs.Calorie.icon,
+                accent = accent,
+                title = stringResource(R.string.dashboard_calories_title),
+            ) {
                 Text(
                     text = stringResource(
                         R.string.calorie_eaten_of_target,
@@ -322,21 +340,13 @@ private fun CaloriesCard(
                         uiState.calorieTarget,
                     ),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (uiState.isOverCalories) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    color = if (uiState.isOverCalories) MaterialTheme.colorScheme.error else accent,
                 )
             }
             LinearProgressIndicator(
                 progress = { uiState.calorieProgress },
                 modifier = Modifier.fillMaxWidth(),
-                color = if (uiState.isOverCalories) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
+                color = if (uiState.isOverCalories) MaterialTheme.colorScheme.error else accent,
             )
         }
     }
@@ -349,26 +359,19 @@ private fun SpentTodayCard(
     onOpen: (Destination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Expense.resolved
     ElevatedCard(
         onClick = { onOpen(Destination.Expenses) },
         modifier = modifier.fillMaxWidth(),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        CardHeader(
+            icon = FeatureGlyphs.Expense.icon,
+            accent = accent,
+            title = stringResource(R.string.dashboard_spent_title),
+            modifier = Modifier.padding(16.dp),
         ) {
-            Text(
-                text = stringResource(R.string.dashboard_spent_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
             if (uiState.spentToday > 0.0) {
-                Text(
-                    text = Money.format(uiState.spentToday),
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                Text(text = Money.format(uiState.spentToday), style = MaterialTheme.typography.titleMedium)
             } else {
                 Text(
                     text = stringResource(R.string.dashboard_spent_none),
@@ -387,42 +390,38 @@ private fun DiaryCard(
     onOpen: (Destination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Diary.resolved
     ElevatedCard(
         onClick = { onOpen(Destination.Diary) },
         modifier = modifier.fillMaxWidth(),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.dashboard_diary_title),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = if (uiState.diaryWrittenToday) {
-                        stringResource(R.string.dashboard_diary_done)
-                    } else {
-                        stringResource(R.string.dashboard_diary_prompt)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (uiState.diaryWrittenToday) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
+            CardHeader(
+                icon = FeatureGlyphs.Diary.icon,
+                accent = accent,
+                title = stringResource(R.string.dashboard_diary_title),
+            ) {
+                if (uiState.diaryStreak > 0) {
+                    Text(
+                        text = "🔥 ${uiState.diaryStreak}",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = accent,
+                    )
+                }
             }
-            if (uiState.diaryStreak > 0) {
-                Text(
-                    text = "🔥 ${uiState.diaryStreak}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            Text(
+                text = if (uiState.diaryWrittenToday) {
+                    stringResource(R.string.dashboard_diary_done)
+                } else {
+                    stringResource(R.string.dashboard_diary_prompt)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = if (uiState.diaryWrittenToday) accent else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 52.dp),
+            )
         }
     }
 }
@@ -439,12 +438,11 @@ private fun GoalsCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.dashboard_goals_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
+            CardHeader(
+                icon = Icons.Filled.Flag,
+                accent = Accents.Goal.resolved,
+                title = stringResource(R.string.dashboard_goals_title),
+            ) {
                 if (uiState.hasMoreGoals) {
                     TextButton(onClick = { onOpen(Destination.Goals) }) {
                         Text(stringResource(R.string.dashboard_goals_see_all))
@@ -458,6 +456,7 @@ private fun GoalsCard(
 
 @Composable
 private fun DashboardGoalRow(item: GoalItem, modifier: Modifier = Modifier) {
+    val accent = goalAccent(item.goal.id).resolved
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -471,21 +470,13 @@ private fun DashboardGoalRow(item: GoalItem, modifier: Modifier = Modifier) {
             Text(
                 text = "${(item.fraction * 100).toInt()}%",
                 style = MaterialTheme.typography.labelMedium,
-                color = if (item.isOverdue) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                color = if (item.isOverdue) MaterialTheme.colorScheme.error else accent,
             )
         }
         LinearProgressIndicator(
             progress = { item.fraction },
             modifier = Modifier.fillMaxWidth(),
-            color = if (item.isOverdue) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.primary
-            },
+            color = if (item.isOverdue) MaterialTheme.colorScheme.error else accent,
         )
     }
 }
@@ -510,37 +501,6 @@ private fun FirstHabitPrompt(onAddHabit: () -> Unit, modifier: Modifier = Modifi
             )
             Button(onClick = onAddHabit) {
                 Text(stringResource(R.string.dashboard_add_habit))
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun MoreTrackers(onOpen: (Destination) -> Unit, modifier: Modifier = Modifier) {
-    val destinations = remember {
-        listOf(Destination.Goals, Destination.Calories, Destination.Water)
-    }
-    Column(modifier = modifier.padding(top = 4.dp)) {
-        Text(
-            text = stringResource(R.string.dashboard_more),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            destinations.forEach { destination ->
-                AssistChip(
-                    onClick = { onOpen(destination) },
-                    label = { Text(stringResource(destination.labelRes)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = destination.icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    },
-                )
             }
         }
     }

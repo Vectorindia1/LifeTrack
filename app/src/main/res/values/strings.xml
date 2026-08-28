@@ -12,7 +12,6 @@
     <string name="dest_settings">Settings</string>
 
     <!-- Dashboard -->
-    <string name="dashboard_title">Today</string>
 
 
     <!-- Habit tracker (milestone 2) -->
@@ -56,7 +55,6 @@
     <string name="dashboard_no_habits_title">Start with one habit</string>
     <string name="dashboard_no_habits_body">Pick one thing you want to do regularly. You can tick it off right here.</string>
     <string name="dashboard_add_habit">Add a habit</string>
-    <string name="dashboard_more">More trackers</string>
     <!-- Expense tracker (milestone 4) -->
     <string name="expense_add">Add expense</string>
     <string name="expense_add_title">New expense</string>
@@ -71,7 +69,6 @@
     <string name="expense_window_day">Today</string>
     <string name="expense_window_week">7 days</string>
     <string name="expense_window_month">This month</string>
-    <string name="expense_total_label">Total</string>
     <string name="expense_by_category">By category</string>
     <string name="expense_over_time">Over time</string>
     <string name="expense_recent">Recent</string>
@@ -223,4 +220,17 @@
     <string name="feature_calorie">Calories</string>
     <string name="feature_water">Water</string>
     <string name="feature_diary">Diary</string>
+    <!-- Dashboard greeting (milestone 11) -->
+    <string name="dashboard_greeting_morning">Good morning</string>
+    <string name="dashboard_greeting_afternoon">Good afternoon</string>
+    <string name="dashboard_greeting_evening">Good evening</string>
+    <string name="dashboard_greeting_night">Good night</string>
+    <string name="dashboard_subtitle">Here\'s your progress for today</string>
+    <string name="settings_display_name">Your name</string>
+    <string name="settings_display_name_placeholder">Optional — shown in the dashboard greeting</string>
+    <!-- Diary today-summary tiles (milestone 11) -->
+    <string name="diary_stat_habits">Habits</string>
+    <string name="diary_stat_spent">Spent</string>
+    <string name="diary_stat_calories">Calories</string>
+    <string name="diary_stat_water">Water</string>
 </resources>

@@ -43,6 +43,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.ui.AppViewModelProvider
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.resolved
+import com.lifetrack.habit.data.HabitSchedule
 import com.lifetrack.habit.data.FrequencyType
 import com.lifetrack.habit.data.Habit
 import com.lifetrack.habit.viewmodel.ChartWindow
@@ -159,43 +162,48 @@ private fun HabitRow(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Habit.resolved
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (item.isDoneToday) {
-                MaterialTheme.colorScheme.primaryContainer
+                accent.copy(alpha = 0.14f)
             } else {
                 MaterialTheme.colorScheme.surfaceVariant
             },
         ),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // One tap to log — PRD's ≤2-tap rule.
-            val toggleLabel = stringResource(R.string.habit_toggle_desc, item.habit.name)
-            Checkbox(
-                checked = item.isDoneToday,
-                onCheckedChange = { onToggle() },
-                modifier = Modifier.semantics { contentDescription = toggleLabel },
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // One tap to log — PRD's ≤2-tap rule.
+                val toggleLabel = stringResource(R.string.habit_toggle_desc, item.habit.name)
+                Checkbox(
+                    checked = item.isDoneToday,
+                    onCheckedChange = { onToggle() },
+                    modifier = Modifier.semantics { contentDescription = toggleLabel },
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = item.habit.name, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = item.subtitle(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (item.streak > 0) accent else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Filled.DeleteOutline,
+                        contentDescription = stringResource(R.string.habit_delete),
+                    )
+                }
+            }
+            WeekDots(
+                weekStart = HabitSchedule.weekStart(java.time.LocalDate.now()),
+                today = java.time.LocalDate.now(),
+                completedDates = item.completedThisWeek,
+                accent = accent,
+                modifier = Modifier.padding(start = 48.dp, top = 2.dp, bottom = 4.dp),
             )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.habit.name, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = item.subtitle(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Filled.DeleteOutline,
-                    contentDescription = stringResource(R.string.habit_delete),
-                )
-            }
         }
     }
 }

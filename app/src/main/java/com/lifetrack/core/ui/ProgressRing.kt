@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.dp
 fun ProgressRing(
     progress: Float,
     modifier: Modifier = Modifier,
-    size: Dp = 120.dp,
-    thickness: Dp = 12.dp,
+    size: Dp = 132.dp,
+    thickness: Dp = 14.dp,
     color: Color = MaterialTheme.colorScheme.primary,
-    trackColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    trackColor: Color = color.copy(alpha = 0.15f),
     content: @Composable () -> Unit = {},
 ) {
     val animated by animateFloatAsState(

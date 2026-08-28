@@ -42,6 +42,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.ui.AppViewModelProvider
+import com.lifetrack.core.ui.IconBadge
+import com.lifetrack.core.ui.theme.goalAccent
+import com.lifetrack.core.ui.theme.goalIcon
+import com.lifetrack.core.ui.theme.resolved
 import com.lifetrack.goal.data.Goal
 import com.lifetrack.goal.viewmodel.GoalItem
 import com.lifetrack.goal.viewmodel.GoalUiState
@@ -181,15 +185,19 @@ private fun GoalCard(
             },
         ),
     ) {
+        val accent = goalAccent(item.goal.id).resolved
         Column(
-            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 12.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                IconBadge(icon = goalIcon(item.goal.id), tint = accent)
                 Text(
                     text = item.goal.name,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp),
                 )
                 IconButton(onClick = onDelete) {
                     Icon(
@@ -202,11 +210,7 @@ private fun GoalCard(
             LinearProgressIndicator(
                 progress = { item.fraction },
                 modifier = Modifier.fillMaxWidth(),
-                color = if (item.isOverdue) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
+                color = if (item.isOverdue) MaterialTheme.colorScheme.error else accent,
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {

@@ -1,6 +1,7 @@
 package com.lifetrack.habit.ui
 
-import androidx.compose.material3.MaterialTheme
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.resolved
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,7 +21,7 @@ fun HabitCompletionChart(
     SimpleBarChart(
         // Percentages read better on an axis than 0..1 fractions.
         points = bars.map { ChartPoint(it.label, (it.rate * 100).toDouble()) },
-        color = MaterialTheme.colorScheme.primary,
+        color = Accents.Habit.resolved,
         height = 160.dp,
         yFormatter = { "${it.toInt()}%" },
         modifier = modifier,

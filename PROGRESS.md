@@ -21,6 +21,42 @@ Check the box when a milestone is fully working end-to-end (not just started).
 
 ## Session Log
 
+### Session 11 — 2026-08-28
+**Visual redesign** (part of milestone 11 — Polish), prompted by the user sharing a reference UI mockup and saying "the UI is not that good."
+
+**Done this session:**
+- **Design token layer**: `Accents` (per-feature light/dark color pairs) and `IconBadge`/`StatTile` shared components in `core/ui/theme/` and `core/ui/`.
+- **Dark theme overhauled** — near-black background, a clearly distinct card surface color, rounder corners app-wide.
+- **Dashboard rebuilt**: time-of-day greeting (optionally by name), icon-badged cards for every tracker, accent-colored progress bars/rings, **deleted the now-redundant `MoreTrackers` chip row** (Goals/Calories/Water have had real dashboard cards since milestones 6–7; the chips were pure duplicate navigation left over from milestone 3).
+- **Habit rows** gained a Mon–Sun week-dot strip showing this week's completions at a glance.
+- **Goal cards** gained a deterministic per-goal icon + accent color.
+- **Diary** gained a "today's summary" stat-tile row (habits/spent/calories/water), surfacing the same numbers already used for the auto-prefill, just more visually.
+- **Charts** gained a gradient area fill under lines and rounded bar tops; every chart and the progress ring now source color from the new accent tokens instead of raw MaterialTheme roles.
+- **Settings and Expense/Calorie/Water screens** got icon-badge headers matching the same language.
+- **New preference + migration**: `displayName` (nullable, v2→v3 Room migration), editable in Settings, feeding the dashboard greeting.
+
+**Decisions made with the user before starting (not guessed):**
+- Kept the current 5-tab bottom nav rather than adopting the reference's center-FAB layout — restyle only, no navigation change.
+- Added a `displayName` preference for a personalized greeting, rather than a generic one.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero warnings**.
+- **70/70 unit tests pass** (69 previous + 1 new for the time-of-day greeting bucket function), via `--rerun-tasks`.
+- Migration v2→v3 checked against the exported schema: `displayName` is `TEXT`, nullable — exactly what `ALTER TABLE ... ADD COLUMN displayName TEXT` produces.
+- String resources audited both ways — clean.
+- Caught and fixed three of my own mistakes before this ever reached you: fully-qualifying extension-property icons instead of importing them (Kotlin doesn't resolve those by qualification), a duplicated `@Composable` annotation left over from a batch edit, and a genuinely duplicate `import Icons` line.
+
+**Still not verified — and now more than ever:**
+- **None of this has been seen rendered.** Colors, spacing, icon sizing, the week-dot strip, the gradient chart fill — all compile-correct, none confirmed to actually look good on a screen. This entire session's work was "make the UI better" and the UI has not been looked at once.
+- **This is the top priority for your next test pass**, more than any previous milestone's caveat.
+
+**Known issues / things to watch:**
+- Deliberately did not build a true 2-column dashboard grid (see MEMORY.md) — variable-height cards in a fixed grid risk ugly uneven rows that only a device screen can catch.
+- All version pins and toolchain notes from session 1 still apply.
+
+**Next up:**
+- **See it on a device first.** After that: finish milestone 11 (remaining polish — animations beyond the ring, empty-state consistency) and milestone 12 (CSV export, stretch).
+
 ### Session 10 — 2026-08-28
 **Milestone 10 complete.** Settings screen, and the project's first Room migration.
 

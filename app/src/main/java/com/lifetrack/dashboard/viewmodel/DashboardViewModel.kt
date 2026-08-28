@@ -53,6 +53,7 @@ data class DashboardUiState(
     val diaryStreak: Int = 0,
     val waterIncrementSmallMl: Int = AppPreferences.DEFAULT_SMALL_ML,
     val waterIncrementLargeMl: Int = AppPreferences.DEFAULT_LARGE_ML,
+    val displayName: String? = null,
 ) {
     val hasMoreGoals: Boolean get() = totalActiveGoals > topGoals.size
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
@@ -163,6 +164,7 @@ class DashboardViewModel(
             ),
             waterIncrementSmallMl = preferences.waterIncrementSmallMl,
             waterIncrementLargeMl = preferences.waterIncrementLargeMl,
+            displayName = preferences.displayName,
         )
     }.stateIn(
         scope = viewModelScope,

@@ -18,10 +18,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
@@ -40,6 +46,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.data.ThemeMode
 import com.lifetrack.core.ui.AppViewModelProvider
+import com.lifetrack.core.ui.IconBadge
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.FeatureGlyphs
+import com.lifetrack.core.ui.theme.resolved
 import com.lifetrack.expense.data.CategoryUsage
 import com.lifetrack.habit.data.Habit
 import com.lifetrack.notification.data.FeatureType
@@ -69,6 +79,7 @@ fun SettingsScreen(
         onDeleteHabit = viewModel::deleteHabit,
         onRenameCategory = { renaming = it },
         onTheme = viewModel::setTheme,
+        onDisplayName = viewModel::setDisplayName,
         contentPadding = contentPadding,
         modifier = modifier,
     )
@@ -127,6 +138,7 @@ private fun SettingsContent(
     onDeleteHabit: (Habit) -> Unit,
     onRenameCategory: (CategoryUsage) -> Unit,
     onTheme: (ThemeMode) -> Unit,
+    onDisplayName: (String?) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -148,7 +160,38 @@ private fun SettingsContent(
         }
 
         item {
-            SettingsCard(stringResource(R.string.settings_targets)) {
+            SettingsCard(
+                stringResource(R.string.settings_display_name),
+                icon = Icons.Filled.Person,
+                accent = MaterialTheme.colorScheme.primary,
+            ) {
+                var name by remember(uiState.preferences.displayName) {
+                    mutableStateOf(uiState.preferences.displayName.orEmpty())
+                }
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    placeholder = { Text(stringResource(R.string.settings_display_name_placeholder)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(
+                        enabled = name.trim() != uiState.preferences.displayName.orEmpty(),
+                        onClick = { onDisplayName(name) },
+                    ) {
+                        Text(stringResource(R.string.settings_save))
+                    }
+                }
+            }
+        }
+
+        item {
+            SettingsCard(
+                stringResource(R.string.settings_targets),
+                icon = FeatureGlyphs.Calorie.icon,
+                accent = Accents.Calorie.resolved,
+            ) {
                 ValueRow(
                     label = stringResource(R.string.settings_calorie_target),
                     value = stringResource(R.string.settings_kcal_value, uiState.calorieTarget),
@@ -167,7 +210,11 @@ private fun SettingsContent(
         }
 
         item {
-            SettingsCard(stringResource(R.string.settings_water_increments)) {
+            SettingsCard(
+                stringResource(R.string.settings_water_increments),
+                icon = FeatureGlyphs.Water.icon,
+                accent = Accents.Water.resolved,
+            ) {
                 ValueRow(
                     label = stringResource(R.string.settings_increment_small),
                     value = stringResource(
@@ -202,7 +249,11 @@ private fun SettingsContent(
         }
 
         item {
-            SettingsCard(stringResource(R.string.settings_notifications)) {
+            SettingsCard(
+                stringResource(R.string.settings_notifications),
+                icon = Icons.Filled.Notifications,
+                accent = MaterialTheme.colorScheme.primary,
+            ) {
                 Text(
                     text = stringResource(R.string.settings_notifications_note),
                     style = MaterialTheme.typography.bodySmall,
@@ -222,7 +273,11 @@ private fun SettingsContent(
         }
 
         item {
-            SettingsCard(stringResource(R.string.settings_habits)) {
+            SettingsCard(
+                stringResource(R.string.settings_habits),
+                icon = FeatureGlyphs.Habit.icon,
+                accent = Accents.Habit.resolved,
+            ) {
                 if (uiState.habits.isEmpty()) {
                     Text(
                         text = stringResource(R.string.settings_no_habits),
@@ -250,7 +305,11 @@ private fun SettingsContent(
         }
 
         item {
-            SettingsCard(stringResource(R.string.settings_categories)) {
+            SettingsCard(
+                stringResource(R.string.settings_categories),
+                icon = Icons.Filled.Badge,
+                accent = Accents.Expense.resolved,
+            ) {
                 if (uiState.categories.isEmpty()) {
                     Text(
                         text = stringResource(R.string.settings_no_categories),
@@ -284,7 +343,11 @@ private fun SettingsContent(
         }
 
         item {
-            SettingsCard(stringResource(R.string.settings_theme)) {
+            SettingsCard(
+                stringResource(R.string.settings_theme),
+                icon = Icons.Filled.DarkMode,
+                accent = MaterialTheme.colorScheme.primary,
+            ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ThemeMode.entries.forEach { mode ->
                         FilterChip(
@@ -303,6 +366,8 @@ private fun SettingsContent(
 private fun SettingsCard(
     title: String,
     modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Filled.Tune,
+    accent: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
     content: @Composable () -> Unit,
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
@@ -310,7 +375,14 @@ private fun SettingsCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconBadge(icon = icon, tint = accent, size = 32.dp)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 10.dp),
+                )
+            }
             content()
         }
     }

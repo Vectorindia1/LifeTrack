@@ -22,6 +22,8 @@ data class HabitItem(
     val isDoneToday: Boolean,
     val isScheduledToday: Boolean,
     val streak: Int,
+    /** This calendar week's completed dates, for the day-dot row. */
+    val completedThisWeek: Set<LocalDate> = emptySet(),
 )
 
 /** One bar in the completion-rate chart. */
@@ -59,6 +61,7 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
             .groupBy { it.habitId }
             .mapValues { (_, entries) -> entries.mapTo(mutableSetOf()) { it.date } }
 
+        val weekStart = HabitSchedule.weekStart(today)
         val items = habits.map { habit ->
             val completed = completedByHabit[habit.id].orEmpty()
             HabitItem(
@@ -66,6 +69,9 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
                 isDoneToday = today in completed,
                 isScheduledToday = HabitSchedule.isScheduledOn(habit, today),
                 streak = HabitSchedule.currentStreak(habit, completed, today),
+                completedThisWeek = completed.filterTo(mutableSetOf()) {
+                    !it.isBefore(weekStart) && it.isBefore(weekStart.plusDays(7))
+                },
             )
         }
 

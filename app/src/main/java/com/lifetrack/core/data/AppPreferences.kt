@@ -24,6 +24,8 @@ data class AppPreferences(
     /** PRD 7.9's configurable "ml increments" — the water quick-add buttons. */
     val waterIncrementSmallMl: Int = DEFAULT_SMALL_ML,
     val waterIncrementLargeMl: Int = DEFAULT_LARGE_ML,
+    /** Optional, for the dashboard greeting. Never required anywhere else. */
+    val displayName: String? = null,
 ) {
     companion object {
         const val SINGLETON_ID = 1L

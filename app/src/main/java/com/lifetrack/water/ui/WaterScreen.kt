@@ -36,6 +36,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.ui.AppViewModelProvider
 import com.lifetrack.core.ui.ProgressRing
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.resolved
 import com.lifetrack.core.ui.chart.ChartPoint
 import com.lifetrack.core.ui.chart.SimpleBarChart
 import com.lifetrack.water.data.WaterLog
@@ -136,7 +138,7 @@ private fun WaterContent(
                         points = uiState.week.map {
                             ChartPoint(it.date.dayOfMonth.toString(), it.ml.toDouble())
                         },
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = Accents.Water.resolved,
                         yFormatter = { "${(it / 1000).toInt()}L" },
                     )
                 }
@@ -181,6 +183,7 @@ private fun RingCard(
         uiState.targetMl,
     )
 
+    val accent = Accents.Water.resolved
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -189,7 +192,7 @@ private fun RingCard(
         ) {
             ProgressRing(
                 progress = uiState.progress,
-                color = MaterialTheme.colorScheme.tertiary,
+                color = accent,
                 modifier = Modifier.semantics { contentDescription = ringDesc },
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {

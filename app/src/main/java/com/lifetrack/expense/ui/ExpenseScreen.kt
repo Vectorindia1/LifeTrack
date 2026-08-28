@@ -40,7 +40,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifetrack.R
 import com.lifetrack.core.ui.AppViewModelProvider
+import com.lifetrack.core.ui.IconBadge
 import com.lifetrack.core.ui.Money
+import com.lifetrack.core.ui.theme.Accents
+import com.lifetrack.core.ui.theme.FeatureGlyphs
+import com.lifetrack.core.ui.theme.resolved
 import com.lifetrack.expense.data.Expense
 import com.lifetrack.expense.viewmodel.ExpenseUiState
 import com.lifetrack.expense.viewmodel.ExpenseViewModel
@@ -157,11 +161,20 @@ private fun TotalCard(
     onWindow: (SpendWindow) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val accent = Accents.Expense.resolved
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconBadge(icon = FeatureGlyphs.Expense.icon, tint = accent, size = 32.dp)
+                Text(
+                    text = Money.format(uiState.windowTotal),
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(start = 10.dp),
+                )
+            }
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 SpendWindow.entries.forEachIndexed { index, window ->
                     SegmentedButton(
@@ -173,15 +186,6 @@ private fun TotalCard(
                     }
                 }
             }
-            Text(
-                text = stringResource(R.string.expense_total_label),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = Money.format(uiState.windowTotal),
-                style = MaterialTheme.typography.headlineMedium,
-            )
         }
     }
 }
