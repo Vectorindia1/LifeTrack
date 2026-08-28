@@ -265,7 +265,14 @@ private fun WaterCard(
     modifier: Modifier = Modifier,
 ) {
     val accent = Accents.Water.resolved
-    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+    // Clickable like the other tracker cards: this is the only way to reach the full
+    // Water screen from the dashboard now that the row below drops its "Custom"
+    // button (see WaterQuickAddRow — three elements were starving each other of
+    // width here, and PRD 7.1 only asks for the two quick-add buttons anyway).
+    ElevatedCard(
+        onClick = { onOpen(Destination.Water) },
+        modifier = modifier.fillMaxWidth(),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -306,6 +313,7 @@ private fun WaterCard(
                     largeMl = uiState.waterIncrementLargeMl,
                     onAdd = onAddWater,
                     onCustom = { onOpen(Destination.Water) },
+                    showCustom = false,
                 )
             }
         }

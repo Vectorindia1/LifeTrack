@@ -21,6 +21,22 @@ Check the box when a milestone is fully working end-to-end (not just started).
 
 ## Session Log
 
+### Session 11 (follow-up) — 2026-08-29
+**First real screenshot of the app, and the first real bug it caught.**
+
+The dashboard's water quick-add buttons rendered as huge vertical pills — "+250 ml" wrapped one character per line because three elements (two quick-add buttons + a "Custom" button) were fighting for width in a narrow card column, and the button label had no line limit to stop it from wrapping instead of failing gracefully.
+
+**Fixed:**
+- Dropped the "Custom" button from the dashboard's water row (`showCustom = false`) — PRD 7.1 only asks for the two quick-add buttons there, so the third element was never justified.
+- Made the dashboard's water card clickable to `Destination.Water`, since removing Custom would otherwise have left no way to reach the full Water screen from the dashboard — a real navigation gap, not just a cosmetic fix.
+- Added `maxLines = 1` + ellipsis to both quick-add button labels as a backstop against the same failure recurring elsewhere.
+
+**Verified:** `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, zero warnings, 70/70 tests pass.
+
+**Still true:** this is the *first* screenshot the app has ever produced, all the way back to milestone 1. Every other screen — Habits, Expenses, Calories, Goals, Diary, Settings — has the identical risk profile (elements crammed into a shared-width row, no line limits) and has never been looked at. Treat any of them rendering oddly as expected-until-proven-otherwise, not a surprise.
+
+**Next up:** keep looking at real screens. Report anything else that renders wrong the same way — a screenshot and a one-line description is enough for me to diagnose.
+
 ### Session 11 — 2026-08-28
 **Visual redesign** (part of milestone 11 — Polish), prompted by the user sharing a reference UI mockup and saying "the UI is not that good."
 

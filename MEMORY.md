@@ -306,6 +306,14 @@ PRD 7.8 states the triggers but not the numbers. These are in `DailyDigest`, pin
 - Dark theme's surface levels were widened (near-black background, a clearly lighter `surfaceVariant` for cards) so a card visibly "sits on" the page, rather than Material's default subtle tonal steps. Card corner radius increased app-wide via a shared `Shapes` override in `Theme.kt`.
 - **Not done, on purpose, given effort/verification limits:** a true 2-column card grid like the reference. Mixing a variable-height list card (Habits) with fixed-height stat cards in the same grid row risks uneven, ugly rows that only a real device screen could catch, and nothing has been run on a device all session. Single-column, full-width cards were kept. Worth revisiting once the current pass has actually been seen.
 
+### 2026-08-28 (session 11, follow-up) — Bug found from the first real screenshot: dashboard water buttons
+The first screenshot ever taken of this app (session 11, after the redesign) showed the dashboard's water quick-add buttons rendered as absurdly tall vertical pills, each digit of "+250 ml" stacked on its own line.
+- **Root cause:** the dashboard's water card packs a ring + title + three row elements (+small, +large, Custom) into a `Column(weight(1f))` that only gets the space left over after a fixed-size ring. That left too little width for three items; `Button`'s label `Text` has no line limit by default, so instead of truncating it wrapped one character per line, and the button's height ballooned to fit.
+- **Fix, not a patch:** dropped `showCustom` to false on the dashboard's `WaterQuickAddRow` call — PRD 7.1 only asks for the two quick-add buttons there, not a Custom entry point, so the third element was never earning its keep. The full Water screen keeps Custom (`showCustom` defaults to `true`), where there is a full card's width to work with.
+- Because dropping Custom removed the dashboard's only way to reach the full Water screen, the water card itself became clickable (`onOpen(Destination.Water)`), matching how the Calories/Expenses/Diary cards already behave. This closes a real navigation gap, not just cosmetic.
+- **Defense in depth added regardless:** both quick-add button labels now carry `maxLines = 1` + `TextOverflow.Ellipsis`. A label that doesn't fit will now truncate with an ellipsis, never balloon the button's height again — this protects against the same failure mode recurring on a narrow phone or with a large accessibility font scale, which nothing in this project can test without a matching device.
+- **Lesson for this project specifically:** every card that lays out more than two elements side-by-side in a `weight(1f)`-shared row is a candidate for the same failure, and none of them have been seen rendered. If another one turns up in testing, the fix pattern is the same: shrink to what the PRD actually asks for at that surface, and add a line limit as a backstop.
+
 ---
 
 ## Known Gotchas / Things to Watch
