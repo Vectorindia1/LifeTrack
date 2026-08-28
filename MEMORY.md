@@ -198,6 +198,12 @@ The 1.x/2.x examples online do not compile. What works, confirmed by compiling a
 - The +250/+500 buttons are inline on the dashboard card, so logging a drink is **one tap from the home screen** — the strictest reading of PRD section 8.
 - "Custom" navigates to the water screen rather than opening a dialog on the dashboard, keeping the dashboard free of modals.
 
+### 2026-08-28 (session 7) — The no-scrolling constraint is relaxed
+- **Decided by the user.** PRD 7.1 ("all visible without scrolling"), PRD 8 and CLAUDE.md UX principle 2 have been amended in place; each amendment is dated so the change is visible rather than silent.
+- Mechanically nothing had to be built: every feature screen was already a `LazyColumn` and the dashboard already scrolled. What changed is the **design constraint**, which had been forcing a compaction budget on the dashboard as trackers were added.
+- **What still holds:** the first screenful must carry today's essentials and the one-tap actions. Scrolling is permitted; burying the habit checkboxes or the water quick-add below the fold is not.
+- Practical consequence: milestones 7 and 8 can add goal and diary cards to the dashboard without fighting for vertical space, and the milestone-11 polish pass no longer needs a "make it all fit" step.
+
 ---
 
 ## Known Gotchas / Things to Watch

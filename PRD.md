@@ -64,7 +64,7 @@ NotificationSettings (id, feature_type, enabled, reminder_time)
 - Today's spend total
 - Active goals with progress bars (top 2–3, "see all" for rest)
 - Diary streak indicator + "write today's entry" prompt
-- All visible without scrolling on a standard phone screen
+- Scrolling is allowed (revised 2026-08-28); the first screenful must still lead with today's essentials — habit checkmarks and the quick-add actions
 
 ### 7.2 Habit Tracker
 - Add habit (name, frequency: daily/weekly/custom days)
@@ -121,7 +121,7 @@ All reminder times are user-configurable in Settings. Users can disable any cate
 ## 8. Non-Functional Requirements
 - App cold start under 1.5s on mid-range devices.
 - All logging actions (habit check, quick-add expense/calorie/water) complete in ≤2 taps from dashboard.
-- No screen requires more than one scroll to see all primary content.
+- Screens may scroll (revised 2026-08-28). Primary content and quick actions must still appear in the first screenful, without the user hunting.
 - Local DB only; no network permissions except none needed for v1 (fully offline).
 - Notifications must be batchable/consolidated, never more than ~3 pushes/day by default.
 

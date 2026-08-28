@@ -43,7 +43,7 @@ This file tells Claude Code how to work on this repo. Read this first, then `PRD
 
 ## UX Principles to Enforce in Every Feature
 1. Logging any single data point (habit check, expense, calorie, water) must take ≤2 taps from the dashboard.
-2. No screen should require more than one scroll on a standard phone.
+2. Screens may scroll (revised 2026-08-28, was "no more than one scroll"). The first screenful must still carry the primary content and the quick actions — don't bury logging behind a scroll.
 3. Notifications must be consolidated — one daily digest, not per-tracker spam (see PRD 7.8).
 4. Graphs stay simple: bar, line, or progress ring only. No multi-axis or dense dashboards.
 
