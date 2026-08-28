@@ -9,6 +9,7 @@ import com.lifetrack.dashboard.viewmodel.DashboardViewModel
 import com.lifetrack.calorie.viewmodel.CalorieViewModel
 import com.lifetrack.expense.viewmodel.ExpenseViewModel
 import com.lifetrack.habit.viewmodel.HabitViewModel
+import com.lifetrack.water.viewmodel.WaterViewModel
 
 /** ViewModel wiring for the manual-DI setup. One entry per ViewModel. */
 object AppViewModelProvider {
@@ -19,11 +20,13 @@ object AppViewModelProvider {
                 habitRepository = lifeTrackApplication().container.habitRepository,
                 expenseRepository = lifeTrackApplication().container.expenseRepository,
                 calorieRepository = lifeTrackApplication().container.calorieRepository,
+                waterRepository = lifeTrackApplication().container.waterRepository,
             )
         }
         initializer { HabitViewModel(lifeTrackApplication().container.habitRepository) }
         initializer { ExpenseViewModel(lifeTrackApplication().container.expenseRepository) }
         initializer { CalorieViewModel(lifeTrackApplication().container.calorieRepository) }
+        initializer { WaterViewModel(lifeTrackApplication().container.waterRepository) }
     }
 }
 

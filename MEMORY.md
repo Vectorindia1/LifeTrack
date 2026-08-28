@@ -177,6 +177,27 @@ The 1.x/2.x examples online do not compile. What works, confirmed by compiling a
 - A "Change target" dialog sits on the calorie screen for now, because otherwise the target is stuck at the seeded 2000 kcal and the whole eaten-vs-target feature cannot be exercised.
 - **Move it to Settings in milestone 10** and decide then whether to keep the shortcut. Same will apply to the water target in milestone 6.
 
+### 2026-08-28 (session 6) — Progress rings are plain Compose, never a chart library
+- `core/ui/ProgressRing` is a `Canvas` drawing two arcs, with `animateFloatAsState` for the fill.
+- CLAUDE.md permits "bar, line, or progress ring", but a ring shows **one number**, not a data series. Pulling Vico in for it would be the wrong tool and would drag chart machinery onto the dashboard.
+- Starts at 12 o'clock and fills clockwise, the way a dial is read. Progress is clamped, so the ring can never wrap past full and read as "barely started" when the user is actually over.
+
+### 2026-08-28 (session 6) — Water is forgiving where calories are not
+- Deliberate asymmetry, and it is not a bug:
+  - **Calories:** going over matters, so `remaining` goes negative and the bar turns red.
+  - **Water:** going over is fine, so `remainingMl` floors at 0 and there is no "over" state at all.
+- Both clamp `progress` to 1.0 and both treat exactly-on-target as met/not-over. Pinned by tests in `WaterUiStateTest` and `CalorieUiStateTest`.
+- An "Undo" affordance exists on water specifically because +250/+500 are one-tap buttons and a mis-tap is likely. It deletes today's most recent log.
+
+### 2026-08-28 (session 6) — Dashboard aggregation uses a private `DayData` holder
+- `combine`'s typed overloads stop at **five** flows; the dashboard already needed six.
+- `DashboardViewModel` now groups the per-day sources into a private `DayData` inside one `today.flatMapLatest { ... }`, keeping the outer `combine` to two arguments.
+- **Add goals (milestone 7) and diary (milestone 8) as fields on `DayData`**, not as extra arguments to the outer combine — otherwise the same five-flow ceiling gets hit again.
+
+### 2026-08-28 (session 6) — Water quick-add lives on the dashboard itself
+- The +250/+500 buttons are inline on the dashboard card, so logging a drink is **one tap from the home screen** — the strictest reading of PRD section 8.
+- "Custom" navigates to the water screen rather than opening a dialog on the dashboard, keeping the dashboard free of modals.
+
 ---
 
 ## Known Gotchas / Things to Watch

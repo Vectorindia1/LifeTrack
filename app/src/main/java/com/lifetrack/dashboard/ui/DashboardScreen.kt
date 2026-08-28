@@ -41,7 +41,9 @@ import com.lifetrack.core.ui.Money
 import com.lifetrack.core.ui.theme.LifeTrackTheme
 import com.lifetrack.dashboard.viewmodel.DashboardUiState
 import com.lifetrack.dashboard.viewmodel.DashboardViewModel
+import com.lifetrack.core.ui.ProgressRing
 import com.lifetrack.habit.viewmodel.HabitItem
+import com.lifetrack.water.ui.WaterQuickAddRow
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -63,6 +65,7 @@ fun DashboardScreen(
     DashboardContent(
         uiState = uiState,
         onToggle = viewModel::toggle,
+        onAddWater = viewModel::addWater,
         onOpen = onOpen,
         contentPadding = contentPadding,
         modifier = modifier,
@@ -73,6 +76,7 @@ fun DashboardScreen(
 private fun DashboardContent(
     uiState: DashboardUiState,
     onToggle: (HabitItem) -> Unit,
+    onAddWater: (Int) -> Unit,
     onOpen: (Destination) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
@@ -96,6 +100,8 @@ private fun DashboardContent(
                 FirstHabitPrompt(onAddHabit = { onOpen(Destination.Habits) })
             }
         }
+
+        item { WaterCard(uiState = uiState, onAddWater = onAddWater, onOpen = onOpen) }
 
         item { CaloriesCard(uiState = uiState, onOpen = onOpen) }
 
@@ -212,6 +218,68 @@ private fun DashboardHabitRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 12.dp),
             )
+        }
+    }
+}
+
+/**
+ * PRD 7.1's water progress ring with +250/+500 inline.
+ *
+ * The quick-add buttons live on the dashboard itself, so logging a drink is a
+ * single tap from the home screen — the strictest case of PRD section 8's rule.
+ */
+@Composable
+private fun WaterCard(
+    uiState: DashboardUiState,
+    onAddWater: (Int) -> Unit,
+    onOpen: (Destination) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            ProgressRing(
+                progress = uiState.waterProgress,
+                size = 72.dp,
+                thickness = 8.dp,
+                color = MaterialTheme.colorScheme.tertiary,
+            ) {
+                Text(
+                    text = "${(uiState.waterProgress * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.dashboard_water_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.water_progress,
+                        uiState.waterDrunkMl,
+                        uiState.waterTargetMl,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (uiState.isWaterGoalMet) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+                WaterQuickAddRow(
+                    onAdd = onAddWater,
+                    onCustom = { onOpen(Destination.Water) },
+                )
+            }
         }
     }
 }
@@ -365,6 +433,7 @@ private fun DashboardPreview() {
         DashboardContent(
             uiState = DashboardUiState(isLoading = false),
             onToggle = {},
+            onAddWater = {},
             onOpen = {},
             contentPadding = PaddingValues(0.dp),
         )

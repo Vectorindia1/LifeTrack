@@ -9,7 +9,7 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 3. Dashboard v1 (habits only)
 - [x] 4. Expense tracker + dashboard integration
 - [x] 5. Calorie tracker + dashboard integration
-- [ ] 6. Water tracker + dashboard integration
+- [x] 6. Water tracker + dashboard integration
 - [ ] 7. Goal tracker + dashboard integration
 - [ ] 8. Diary + dashboard integration
 - [ ] 9. Notification system (WorkManager, consolidated daily check)
@@ -20,6 +20,39 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ---
 
 ## Session Log
+
+### Session 6 — 2026-08-28
+**Milestone 6 complete.** Water tracker with a real progress ring, plus dashboard quick-add.
+
+**Done this session:**
+- `core/ui/ProgressRing` — a Compose `Canvas` ring with animated fill. Deliberately not a charting component; see MEMORY.md.
+- `WaterRepository` + `WaterViewModel`, reusing the local-day helpers.
+- `WaterScreen`: progress ring with amount inside, +250/+500/custom quick-add, **Undo** for mis-taps, a 7-day bar chart, today's entries with delete, and target editing.
+- **Dashboard water card with +250/+500 inline** — logging a drink is now one tap from the home screen, the strictest case of PRD section 8's rule.
+- Restructured `DashboardViewModel` around a private `DayData` holder after hitting `combine`'s five-flow ceiling.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero warnings**.
+- **36/36 unit tests pass** (16 habit + 9 expense + 5 calorie + 6 new water), via `--rerun-tasks`.
+- String resources audited both ways — clean.
+- One compile error en route (`getValue` import missing for a `by` delegate) — the same slip as in milestone 1, fixed.
+
+**Decisions recorded in MEMORY.md:**
+- Progress rings are plain Compose, never a chart library.
+- Water is forgiving where calories are strict — water has no "over" state, calories do. Both pinned by tests.
+- Dashboard aggregation goes through `DayData`; milestones 7 and 8 must add fields there, not new combine arguments.
+
+**Known issues / things to watch:**
+- All version pins from session 1 still apply.
+- **The dashboard is now five cards** (habits, water, calories, spend, more-trackers) and PRD 7.1 wants no scrolling. Goals and diary are still to come. This will almost certainly need compacting in milestone 11 — and it has never been seen on a real screen.
+- Calorie and water target dialogs both duplicate what Settings will own in milestone 10.
+
+**Next up — Milestone 7: Goal tracker + dashboard integration**
+1. `GoalRepository` + `GoalViewModel`; the `goals` table and DAO already exist.
+2. Add goal (name, target value, unit, deadline), progress bar per goal, days remaining.
+3. Update progress by manual entry or increment.
+4. Dashboard: top 2–3 active goals with a "see all", per PRD 7.1.
+5. Deadline notifications are milestone 9, not this one.
 
 ### Session 5 — 2026-08-28
 **Milestone 5 complete.** Calorie tracker plus dashboard progress bar. Also refactored charting.

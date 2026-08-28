@@ -17,7 +17,6 @@
     <!-- Milestone-1 placeholder scaffolding -->
     <string name="placeholder_coming_in_milestone">Coming in milestone %1$d</string>
     <string name="placeholder_goals_body">Set a target, nudge the number up, see the deadline coming.</string>
-    <string name="placeholder_water_body">Quick +250 ml / +500 ml taps against a daily target.</string>
     <string name="placeholder_diary_body">One entry a day, a mood tag, and a calendar to look back.</string>
     <string name="placeholder_settings_body">Daily targets, reminder times, habit and category management.</string>
 
@@ -111,4 +110,28 @@
 
     <!-- Dashboard calorie section -->
     <string name="dashboard_calories_title">Calories</string>
+    <!-- Water tracker (milestone 6) -->
+    <string name="water_add_small">+250 ml</string>
+    <string name="water_add_large">+500 ml</string>
+    <string name="water_add_custom">Custom</string>
+    <string name="water_custom_title">Add water</string>
+    <string name="water_custom_label">Amount (ml)</string>
+    <string name="water_undo">Undo</string>
+    <string name="water_save">Save</string>
+    <string name="water_cancel">Cancel</string>
+    <string name="water_delete">Delete entry</string>
+    <string name="water_progress">%1$d / %2$d ml</string>
+    <string name="water_remaining">%1$d ml to go</string>
+    <string name="water_goal_met">Target reached</string>
+    <string name="water_week_title">Last 7 days</string>
+    <string name="water_today_title">Today</string>
+    <string name="water_empty_today">Nothing logged today.</string>
+    <string name="water_target_title">Daily target</string>
+    <string name="water_target_edit">Change target</string>
+    <string name="water_target_label">Daily target (ml)</string>
+    <string name="water_unit">%1$d ml</string>
+    <string name="water_ring_desc">%1$d of %2$d millilitres</string>
+
+    <!-- Dashboard water section -->
+    <string name="dashboard_water_title">Water</string>
 </resources>

@@ -4,6 +4,7 @@ import android.content.Context
 import com.lifetrack.calorie.data.CalorieRepository
 import com.lifetrack.expense.data.ExpenseRepository
 import com.lifetrack.habit.data.HabitRepository
+import com.lifetrack.water.data.WaterRepository
 
 /**
  * Hand-rolled service locator. PRD section 5 lists Hilt as optional — the app is
@@ -25,4 +26,5 @@ class AppContainer(context: Context) {
     val habitRepository: HabitRepository by lazy { HabitRepository(habitDao) }
     val expenseRepository: ExpenseRepository by lazy { ExpenseRepository(expenseDao) }
     val calorieRepository: CalorieRepository by lazy { CalorieRepository(calorieDao) }
+    val waterRepository: WaterRepository by lazy { WaterRepository(waterDao) }
 }
