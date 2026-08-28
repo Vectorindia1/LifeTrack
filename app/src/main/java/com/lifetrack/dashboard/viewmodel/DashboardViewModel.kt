@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lifetrack.calorie.data.CalorieGoal
 import com.lifetrack.core.data.AppPreferences
 import com.lifetrack.core.data.PreferencesRepository
+import com.lifetrack.core.data.effectiveCurrencyLocale
 import com.lifetrack.calorie.data.CalorieLog
 import com.lifetrack.calorie.data.CalorieRepository
 import com.lifetrack.diary.data.DiaryEntry
@@ -59,6 +60,7 @@ data class DashboardUiState(
     val displayName: String? = null,
     val periodCurrentCycleDay: Int? = null,
     val hasPeriodLogs: Boolean = false,
+    val currencyLocale: java.util.Locale = java.util.Locale.getDefault(),
 ) {
     val hasMoreGoals: Boolean get() = totalActiveGoals > topGoals.size
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
@@ -193,6 +195,7 @@ class DashboardViewModel(
             displayName = preferences.displayName,
             periodCurrentCycleDay = CycleStats.currentCycleDay(data.periodLogs, date),
             hasPeriodLogs = data.periodLogs.isNotEmpty(),
+            currencyLocale = preferences.effectiveCurrencyLocale(),
         )
     }.stateIn(
         scope = viewModelScope,

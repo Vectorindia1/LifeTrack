@@ -5,7 +5,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -30,10 +29,16 @@ fun LifeTrackApp(navController: NavHostController = rememberNavController()) {
                         icon = {
                             Icon(
                                 imageVector = destination.icon,
-                                contentDescription = null,
+                                // The label Text below is gone, so this is now the
+                                // only description a screen reader has for the tab —
+                                // it must carry what the label used to say.
+                                contentDescription = stringResource(destination.labelRes),
                             )
                         },
-                        label = { Text(stringResource(destination.labelRes)) },
+                        // Icon-only nav bar, per the user's request: the icons are
+                        // distinct enough (calendar/check/wallet/book/gear) not to
+                        // need text labels for a sighted user.
+                        label = null,
                     )
                 }
             }

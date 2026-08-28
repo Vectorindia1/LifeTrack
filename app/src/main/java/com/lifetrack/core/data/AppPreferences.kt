@@ -26,6 +26,14 @@ data class AppPreferences(
     val waterIncrementLargeMl: Int = DEFAULT_LARGE_ML,
     /** Optional, for the dashboard greeting. Never required anywhere else. */
     val displayName: String? = null,
+    /**
+     * BCP-47 language tag (e.g. "en-IN", "en-US") whose *country* determines the
+     * currency symbol and grouping used for money everywhere in the app. Null means
+     * "follow the device locale" — the original behaviour, still the default. See
+     * [com.lifetrack.core.ui.CurrencyOption] for the curated picker list and
+     * [effectiveCurrencyLocale] for how this resolves to an actual [java.util.Locale].
+     */
+    val currencyLocaleTag: String? = null,
 ) {
     companion object {
         const val SINGLETON_ID = 1L
@@ -33,6 +41,10 @@ data class AppPreferences(
         const val DEFAULT_LARGE_ML = 500
     }
 }
+
+/** Pure resolution from a stored preference to an actual [java.util.Locale] — see [AppPreferences.currencyLocaleTag]. */
+fun AppPreferences.effectiveCurrencyLocale(): java.util.Locale =
+    currencyLocaleTag?.let(java.util.Locale::forLanguageTag) ?: java.util.Locale.getDefault()
 
 @Dao
 interface AppPreferencesDao {

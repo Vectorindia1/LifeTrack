@@ -137,7 +137,11 @@ private fun ExpenseContent(
                     )
                 }
                 items(uiState.recent, key = { it.id }) { expense ->
-                    ExpenseRow(expense = expense, onDelete = { onDelete(expense) })
+                    ExpenseRow(
+                        expense = expense,
+                        currencyLocale = uiState.currencyLocale,
+                        onDelete = { onDelete(expense) },
+                    )
                 }
             }
         }
@@ -170,7 +174,7 @@ private fun TotalCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconBadge(icon = FeatureGlyphs.Expense.icon, tint = accent, size = 32.dp)
                 Text(
-                    text = Money.format(uiState.windowTotal),
+                    text = Money.format(uiState.windowTotal, uiState.currencyLocale),
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(start = 10.dp),
                 )
@@ -220,6 +224,7 @@ private fun NoData(modifier: Modifier = Modifier) {
 @Composable
 private fun ExpenseRow(
     expense: Expense,
+    currencyLocale: java.util.Locale,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -249,7 +254,7 @@ private fun ExpenseRow(
                 )
             }
             Text(
-                text = Money.format(expense.amount),
+                text = Money.format(expense.amount, currencyLocale),
                 style = MaterialTheme.typography.titleMedium,
             )
             IconButton(onClick = onDelete) {

@@ -45,7 +45,7 @@ import com.lifetrack.water.data.WaterLog
         AppPreferences::class,
         PeriodLog::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -75,7 +75,7 @@ abstract class LifeTrackDatabase : RoomDatabase() {
         private fun build(context: Context): LifeTrackDatabase =
             Room.databaseBuilder(context, LifeTrackDatabase::class.java, DATABASE_NAME)
                 .addCallback(SeedCallback)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
         /**
@@ -168,6 +168,18 @@ abstract class LifeTrackDatabase : RoomDatabase() {
                 db.execSQL(
                     "CREATE UNIQUE INDEX IF NOT EXISTS `index_period_logs_startDate` ON `period_logs` (`startDate`)",
                 )
+            }
+        }
+
+        /**
+         * v4 -> v5: adds the nullable `currencyLocaleTag` column to `app_preferences`
+         * for the currency picker. A plain ADD COLUMN, same shape as v2->v3's
+         * `displayName` — existing rows get NULL, matching the Kotlin default of
+         * "follow the device locale", so no backfill is needed.
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE app_preferences ADD COLUMN currencyLocaleTag TEXT")
             }
         }
 

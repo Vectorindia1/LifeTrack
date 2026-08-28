@@ -333,6 +333,17 @@ Added by user request — not in the original PRD's six trackers. PRD 7.10 and s
 
 **Process note, not product:** two separate edits in this feature (a `DashboardUiState` field addition and its corresponding constructor call) were silently no-ops — a Python `str.replace()` call whose target string didn't match the actual file content (because the file had shifted since I last read it) returned the string unchanged instead of erroring, and the script's own success message printed regardless. The build caught it, but only because it happened to also touch a `.kt` file — the exact same failure mode hit the water quick-add fix session 11→12 in a `.xml` file, twice, before this. **Lesson: prefer the Edit tool (which reads first and errors loudly on a mismatch) over ad hoc `python -c "...replace..."` for any edit whose target text might have moved** — the water and dashboard incidents together are two failures from the same root cause in two sessions.
 
+### 2026-08-29 — Bottom nav is icon-only; screen-reader labels moved to the icon itself
+- Removed the text label under each bottom-nav icon, by user request — the icons (calendar/check/wallet/book/gear) are distinct enough without them.
+- **The icon's `contentDescription` now carries what the label used to say** (`stringResource(destination.labelRes)`), rather than being null. Removing the visible label without doing this would have silently broken TalkBack for the whole nav bar — a sighted-user request should never cost accessibility.
+
+### 2026-08-29 — Currency is a user preference, not just the device locale
+- Added by user request: money was previously always formatted from `Locale.getDefault()` (see the milestone-4 entry) — correct as a *default*, but with no way to override it, someone whose phone is set to one locale but who wants to track a different currency had no path to that.
+- `AppPreferences.currencyLocaleTag: String?` (nullable — null means "follow the device locale", preserving the original default exactly). Room migration v4→v5, same ADD-COLUMN shape as `displayName`.
+- **`CurrencyOption`** (`core/ui/CurrencyOption.kt`) is a curated list of ~7 currencies + "System default" — not a searchable 150-entry ISO-4217 list, which would be overkill for a personal app. Each option pairs a currency with an *English-language locale in that currency's country* (e.g. EUR → `en-IE`, JPY → `en-JP`) so `Money.format` gets correct symbol **and** grouping from one `Locale`, rather than mixing a currency code with an unrelated locale's number formatting.
+- **This resolves through every ViewModel that displays money — Expense, Dashboard, Diary — via `AppPreferences.effectiveCurrencyLocale()`**, a pure function threaded through their `UiState`s exactly like every other preference in this app (water increments, theme). No screen reads `Locale.getDefault()` directly for money anymore; all of them read `uiState.currencyLocale`.
+- Diary's `combine` was already at 5 flows before this; `summaryFlow` and `preferencesRepository.preferences` are folded into one via a nested `combine` first, same pattern used for the dashboard's `DayExtras` earlier — see that entry for why this pattern exists.
+
 ---
 
 ## Known Gotchas / Things to Watch

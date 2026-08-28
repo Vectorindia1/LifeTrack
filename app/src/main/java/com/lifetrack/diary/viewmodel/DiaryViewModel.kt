@@ -3,6 +3,8 @@ package com.lifetrack.diary.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lifetrack.calorie.data.CalorieRepository
+import com.lifetrack.core.data.PreferencesRepository
+import com.lifetrack.core.data.effectiveCurrencyLocale
 import com.lifetrack.diary.data.DaySummary
 import com.lifetrack.diary.data.DiaryEntry
 import com.lifetrack.diary.data.DiaryRepository
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.util.Locale
 
 data class DiaryUiState(
     val isLoading: Boolean = true,
@@ -32,6 +35,7 @@ data class DiaryUiState(
     val streak: Int = 0,
     /** Stats for [selectedDate], used to prefill a blank entry. */
     val summary: DaySummary = DaySummary(),
+    val currencyLocale: Locale = Locale.getDefault(),
 ) {
     val hasEntry: Boolean get() = entry != null
 }
@@ -48,6 +52,7 @@ class DiaryViewModel(
     private val expenseRepository: ExpenseRepository,
     private val waterRepository: WaterRepository,
     private val calorieRepository: CalorieRepository,
+    preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
     private val today = MutableStateFlow(LocalDate.now())
@@ -73,13 +78,19 @@ class DiaryViewModel(
         }
     }
 
+    // Folded together so the outer combine below stays within its 5-flow limit.
+    private val summaryAndPreferences = combine(
+        summaryFlow,
+        preferencesRepository.preferences,
+    ) { summary, preferences -> summary to preferences }
+
     val uiState: StateFlow<DiaryUiState> = combine(
         selectedDate.flatMapLatest { diaryRepository.observeEntryForDate(it) },
         today.flatMapLatest { diaryRepository.observeRecentEntries(it) },
-        summaryFlow,
+        summaryAndPreferences,
         selectedDate,
         today,
-    ) { entry, recent, summary, selected, today ->
+    ) { entry, recent, (summary, preferences), selected, today ->
         val dates = recent.mapTo(mutableSetOf()) { it.date }
         DiaryUiState(
             isLoading = false,
@@ -89,6 +100,7 @@ class DiaryViewModel(
             datesWithEntries = dates,
             streak = DiaryStreak.current(dates, today),
             summary = summary,
+            currencyLocale = preferences.effectiveCurrencyLocale(),
         )
     }.stateIn(
         scope = viewModelScope,

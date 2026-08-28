@@ -89,6 +89,10 @@ class SettingsViewModel(
         viewModelScope.launch { preferencesRepository.setThemeMode(mode) }
     }
 
+    fun setCurrency(option: com.lifetrack.core.ui.CurrencyOption) {
+        viewModelScope.launch { preferencesRepository.setCurrencyLocaleTag(option.tag) }
+    }
+
     fun setWaterIncrements(smallMl: Int, largeMl: Int) {
         viewModelScope.launch { preferencesRepository.setWaterIncrements(smallMl, largeMl) }
     }

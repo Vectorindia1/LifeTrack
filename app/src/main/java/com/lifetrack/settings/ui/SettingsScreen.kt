@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Notifications
@@ -60,6 +61,7 @@ import com.lifetrack.settings.viewmodel.SettingsViewModel
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     contentPadding: PaddingValues,
@@ -98,6 +100,7 @@ fun SettingsScreen(
         onDeleteHabit = viewModel::deleteHabit,
         onRenameCategory = { renaming = it },
         onTheme = viewModel::setTheme,
+        onCurrency = viewModel::setCurrency,
         onDisplayName = viewModel::setDisplayName,
         onOpenNotificationSettings = {
             val intent = android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
@@ -154,6 +157,7 @@ fun SettingsScreen(
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun SettingsContent(
     uiState: SettingsUiState,
@@ -165,6 +169,7 @@ private fun SettingsContent(
     onDeleteHabit: (Habit) -> Unit,
     onRenameCategory: (CategoryUsage) -> Unit,
     onTheme: (ThemeMode) -> Unit,
+    onCurrency: (com.lifetrack.core.ui.CurrencyOption) -> Unit,
     onDisplayName: (String?) -> Unit,
     onOpenNotificationSettings: () -> Unit,
     onSendTestNotification: () -> Unit,
@@ -423,6 +428,27 @@ private fun SettingsContent(
                             selected = uiState.preferences.themeMode == mode,
                             onClick = { onTheme(mode) },
                             label = { Text(stringResource(mode.labelRes())) },
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            SettingsCard(
+                stringResource(R.string.settings_currency),
+                icon = Icons.Filled.AttachMoney,
+                accent = MaterialTheme.colorScheme.primary,
+            ) {
+                val selected = com.lifetrack.core.ui.CurrencyOption.fromTag(uiState.preferences.currencyLocaleTag)
+                androidx.compose.foundation.layout.FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    com.lifetrack.core.ui.CurrencyOption.entries.forEach { option ->
+                        FilterChip(
+                            selected = selected == option,
+                            onClick = { onCurrency(option) },
+                            label = { Text(option.displayName) },
                         )
                     }
                 }

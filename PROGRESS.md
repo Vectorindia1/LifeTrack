@@ -22,6 +22,23 @@ Check the box when a milestone is fully working end-to-end (not just started).
 
 ## Session Log
 
+### Session 12 (continued 2) — 2026-08-29
+Two more fixes from a screenshot: icon-only bottom nav, and a currency preference.
+
+**Done:**
+- **Bottom nav is now icon-only.** Text labels removed per request; each icon's `contentDescription` now carries what the label used to say, so TalkBack accessibility isn't silently broken by the change.
+- **Currency is now a user preference**, not just whatever the device locale happens to be. New `currencyLocaleTag` field (Room migration v4→v5), a curated `CurrencyOption` picker in Settings (System default, INR, USD, EUR, GBP, JPY, AUD, CAD), and every screen that shows money (Expense, Dashboard, Diary) now reads the resolved locale from its own `UiState` instead of calling `Locale.getDefault()` directly.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, zero warnings.
+- **82/82 tests pass** (78 previous + 4 new `CurrencyOptionTest`, confirming the curated locales actually resolve to the intended currency codes).
+- Migration v4→v5 checked against the exported v5 schema: `currencyLocaleTag` is nullable `TEXT`, matching the `ALTER TABLE ADD COLUMN` statement exactly.
+- String resources audited both ways — clean.
+
+**Not investigated:** a possible FAB/list-item overlap visible in the screenshot that prompted this session's fixes — genuinely couldn't tell from a single static photo whether it's a real layout bug or just where the list happened to be scrolled. Flagged back to the user rather than guessed at.
+
+**Next up:** waiting on a look at all of this — the icon-only nav, the currency picker in Settings, and (still) the notification diagnostics and period tracker from earlier this session. Nothing new has been rendered yet either.
+
 ### Session 12 (continued) — 2026-08-29
 **Period tracker added**, on top of this session's notification diagnostics.
 

@@ -381,7 +381,10 @@ private fun SpentTodayCard(
             modifier = Modifier.padding(16.dp),
         ) {
             if (uiState.spentToday > 0.0) {
-                Text(text = Money.format(uiState.spentToday), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = Money.format(uiState.spentToday, uiState.currencyLocale),
+                    style = MaterialTheme.typography.titleMedium,
+                )
             } else {
                 Text(
                     text = stringResource(R.string.dashboard_spent_none),

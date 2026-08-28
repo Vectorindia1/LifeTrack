@@ -22,6 +22,9 @@ class PreferencesRepository(private val dao: AppPreferencesDao) {
         it.copy(displayName = name?.trim()?.ifBlank { null })
     }
 
+    /** Null resets to "follow the device locale" — see [AppPreferences.currencyLocaleTag]. */
+    suspend fun setCurrencyLocaleTag(tag: String?) = update { it.copy(currencyLocaleTag = tag) }
+
     private suspend fun update(transform: (AppPreferences) -> AppPreferences) {
         dao.upsert(transform(preferences.first()))
     }

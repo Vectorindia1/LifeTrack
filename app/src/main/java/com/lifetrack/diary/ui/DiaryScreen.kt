@@ -90,7 +90,7 @@ private fun DiaryContent(
         mutableStateOf(uiState.entry?.mood)
     }
 
-    val summaryLine = uiState.summary.line()
+    val summaryLine = uiState.summary.line(uiState.currencyLocale)
 
     // PRD 7.7: prefill a blank entry with the day's summary to kill the blank page.
     // Only when there is no saved entry and nothing has been typed, and nothing is
@@ -144,7 +144,11 @@ private fun DiaryContent(
 
 /** The numbers behind the auto-prefilled summary line, shown as tiles rather than text. */
 @Composable
-private fun TodaySummaryRow(summary: DaySummary, modifier: Modifier = Modifier) {
+private fun TodaySummaryRow(
+    summary: DaySummary,
+    currencyLocale: java.util.Locale,
+    modifier: Modifier = Modifier,
+) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -160,7 +164,7 @@ private fun TodaySummaryRow(summary: DaySummary, modifier: Modifier = Modifier) 
         if (summary.spent > 0.0) {
             StatTile(
                 icon = FeatureGlyphs.Expense.icon,
-                value = Money.format(summary.spent),
+                value = Money.format(summary.spent, currencyLocale),
                 label = stringResource(R.string.diary_stat_spent),
                 accent = Accents.Expense.resolved,
             )
@@ -247,7 +251,7 @@ private fun EntryEditor(
             }
 
             if (!uiState.summary.isEmpty) {
-                TodaySummaryRow(uiState.summary)
+                TodaySummaryRow(uiState.summary, uiState.currencyLocale)
             }
 
             Text(
@@ -292,11 +296,11 @@ private fun EntryEditor(
  * rather than a line of zeroes.
  */
 @Composable
-private fun DaySummary.line(): String? {
+private fun DaySummary.line(currencyLocale: java.util.Locale): String? {
     if (isEmpty) return null
     val parts = buildList {
         if (habitsDue > 0) add(stringResource(R.string.diary_summary_habits, habitsDone, habitsDue))
-        if (spent > 0.0) add(stringResource(R.string.diary_summary_spent, Money.format(spent)))
+        if (spent > 0.0) add(stringResource(R.string.diary_summary_spent, Money.format(spent, currencyLocale)))
         if (waterMl > 0) {
             val litres = String.format(java.util.Locale.getDefault(), "%.1fL", waterMl / 1000.0)
             add(stringResource(R.string.diary_summary_water, litres))

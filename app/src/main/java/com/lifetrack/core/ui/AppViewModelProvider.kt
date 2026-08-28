@@ -32,7 +32,10 @@ object AppViewModelProvider {
             )
         }
         initializer { HabitViewModel(lifeTrackApplication().container.habitRepository) }
-        initializer { ExpenseViewModel(lifeTrackApplication().container.expenseRepository) }
+        initializer {
+            val app = lifeTrackApplication()
+            ExpenseViewModel(app.container.expenseRepository, app.container.preferencesRepository)
+        }
         initializer { CalorieViewModel(lifeTrackApplication().container.calorieRepository) }
         initializer {
             val app = lifeTrackApplication()
@@ -60,6 +63,7 @@ object AppViewModelProvider {
                 expenseRepository = container.expenseRepository,
                 waterRepository = container.waterRepository,
                 calorieRepository = container.calorieRepository,
+                preferencesRepository = container.preferencesRepository,
             )
         }
     }

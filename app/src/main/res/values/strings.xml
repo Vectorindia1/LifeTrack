@@ -210,6 +210,7 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
+    <string name="settings_currency">Currency</string>
     <string name="settings_edit">Edit</string>
     <string name="settings_save">Save</string>
     <string name="settings_cancel">Cancel</string>

@@ -2,6 +2,8 @@ package com.lifetrack.expense.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lifetrack.core.data.PreferencesRepository
+import com.lifetrack.core.data.effectiveCurrencyLocale
 import com.lifetrack.expense.data.Expense
 import com.lifetrack.expense.data.ExpenseCategories
 import com.lifetrack.expense.data.ExpenseRepository
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import java.util.Locale
 
 /** Which totals window the screen is showing. PRD 7.4: daily / weekly / monthly. */
 enum class SpendWindow { DAY, WEEK, MONTH }
@@ -33,12 +36,16 @@ data class ExpenseUiState(
     val byCategory: List<CategoryTotal> = emptyList(),
     val overTime: List<SpendPoint> = emptyList(),
     val knownCategories: List<String> = ExpenseCategories.PRESETS,
+    val currencyLocale: Locale = Locale.getDefault(),
 ) {
     val isEmpty: Boolean get() = !isLoading && recent.isEmpty()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() {
+class ExpenseViewModel(
+    private val repository: ExpenseRepository,
+    preferencesRepository: PreferencesRepository,
+) : ViewModel() {
 
     private val today = MutableStateFlow(LocalDate.now())
     private val window = MutableStateFlow(SpendWindow.WEEK)
@@ -47,7 +54,8 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
         repository.observeExpenses(),
         window,
         today,
-    ) { expenses, window, today ->
+        preferencesRepository.preferences,
+    ) { expenses, window, today, preferences ->
         val zone = ZoneId.systemDefault()
         val range = window.rangeEnding(today)
 
@@ -65,6 +73,7 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
                 .sortedByDescending { it.total },
             overTime = spendOverTime(expenses, window, today, zone),
             knownCategories = ExpenseCategories.allKnown(expenses.map { it.category }),
+            currencyLocale = preferences.effectiveCurrencyLocale(),
         )
     }.stateIn(
         scope = viewModelScope,
