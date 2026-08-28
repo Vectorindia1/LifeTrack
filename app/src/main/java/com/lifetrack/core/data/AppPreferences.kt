@@ -34,11 +34,21 @@ data class AppPreferences(
      * [effectiveCurrencyLocale] for how this resolves to an actual [java.util.Locale].
      */
     val currencyLocaleTag: String? = null,
+    /**
+     * A recurring "drink water" nudge every [waterReminderIntervalMinutes], during
+     * waking hours only. **Off by default and separate from [FeatureType.WATER]'s
+     * digest reminder** — a per-hour alert is a deliberate departure from this app's
+     * "one consolidated notification" rule (PRD 7.8), made at explicit user request.
+     * See MEMORY.md before changing the default or folding this into the digest.
+     */
+    val waterReminderEnabled: Boolean = false,
+    val waterReminderIntervalMinutes: Int = DEFAULT_WATER_REMINDER_MINUTES,
 ) {
     companion object {
         const val SINGLETON_ID = 1L
         const val DEFAULT_SMALL_ML = 250
         const val DEFAULT_LARGE_ML = 500
+        const val DEFAULT_WATER_REMINDER_MINUTES = 60
     }
 }
 

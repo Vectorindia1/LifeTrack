@@ -16,6 +16,9 @@ work = "2.11.2"
 # Charts — Vico. Choice + rationale recorded in MEMORY.md (2026-08-28).
 vico = "3.2.3"
 
+# Home screen widget. minCompileSdk=35 per its AAR metadata — fits under our 36 cap.
+glance = "1.2.0"
+
 # Test
 junit = "4.13.2"
 androidxJunit = "1.3.0"
@@ -46,6 +49,8 @@ androidx-room-testing = { group = "androidx.room", name = "room-testing", versio
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 
 vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }

@@ -101,6 +101,7 @@ fun SettingsScreen(
         onRenameCategory = { renaming = it },
         onTheme = viewModel::setTheme,
         onCurrency = viewModel::setCurrency,
+        onWaterReminder = viewModel::setWaterReminder,
         onDisplayName = viewModel::setDisplayName,
         onOpenNotificationSettings = {
             val intent = android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
@@ -170,6 +171,7 @@ private fun SettingsContent(
     onRenameCategory: (CategoryUsage) -> Unit,
     onTheme: (ThemeMode) -> Unit,
     onCurrency: (com.lifetrack.core.ui.CurrencyOption) -> Unit,
+    onWaterReminder: (Boolean, Int) -> Unit,
     onDisplayName: (String?) -> Unit,
     onOpenNotificationSettings: () -> Unit,
     onSendTestNotification: () -> Unit,
@@ -450,6 +452,44 @@ private fun SettingsContent(
                             onClick = { onCurrency(option) },
                             label = { Text(option.displayName) },
                         )
+                    }
+                }
+            }
+        }
+
+        item {
+            val prefs = uiState.preferences
+            SettingsCard(
+                stringResource(R.string.settings_water_reminder),
+                icon = com.lifetrack.core.ui.theme.FeatureGlyphs.Water.icon,
+                accent = com.lifetrack.core.ui.theme.Accents.Water.resolved,
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_water_reminder_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.settings_water_reminder_toggle),
+                        modifier = Modifier.weight(1f),
+                    )
+                    Switch(
+                        checked = prefs.waterReminderEnabled,
+                        onCheckedChange = { onWaterReminder(it, prefs.waterReminderIntervalMinutes) },
+                    )
+                }
+                if (prefs.waterReminderEnabled) {
+                    androidx.compose.foundation.layout.FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        listOf(15, 30, 60, 90, 120).forEach { minutes ->
+                            FilterChip(
+                                selected = prefs.waterReminderIntervalMinutes == minutes,
+                                onClick = { onWaterReminder(true, minutes) },
+                                label = { Text(stringResource(R.string.settings_water_reminder_interval, minutes)) },
+                            )
+                        }
                     }
                 }
             }

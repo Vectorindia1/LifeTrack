@@ -82,6 +82,75 @@ object Notifier {
     fun cancel(context: Context) {
         NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
     }
+
+    // --- Interval water reminders (session 12) ---
+    //
+    // Deliberately a SEPARATE channel and id from the digest above, and audible by
+    // default (IMPORTANCE_DEFAULT, not _LOW): this is a per-interval nudge the user
+    // opted into explicitly, not the consolidated daily digest, and it is meant to
+    // actually get attention the way the user asked ("alarm wud ring"). See
+    // MEMORY.md for why this is exempted from the "one notification" rule.
+
+    private const val WATER_CHANNEL_ID = "lifetrack_water_reminder"
+    private const val WATER_NOTIFICATION_ID = 1002
+
+    fun ensureWaterReminderChannel(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val channel = NotificationChannel(
+            WATER_CHANNEL_ID,
+            context.getString(R.string.water_reminder_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT,
+        ).apply {
+            description = context.getString(R.string.water_reminder_channel_desc)
+        }
+        context.getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+    }
+
+    /**
+     * @param smallMl / [largeMl] populate two notification actions that log water
+     *   directly via [com.lifetrack.notification.WaterReminderActionReceiver] — no
+     *   need to open the app for the common case.
+     */
+    fun postWaterReminder(context: Context, drunkMl: Int, targetMl: Int, smallMl: Int, largeMl: Int) {
+        if (!canPost(context)) return
+        ensureWaterReminderChannel(context)
+
+        val openApp = PendingIntent.getActivity(
+            context,
+            1,
+            Intent(context, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+
+        val notification = NotificationCompat.Builder(context, WATER_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.water_reminder_title))
+            .setContentText(context.getString(R.string.water_progress, drunkMl, targetMl))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .setContentIntent(openApp)
+            .addAction(0, context.getString(R.string.water_add_amount, smallMl), waterActionIntent(context, smallMl))
+            .addAction(0, context.getString(R.string.water_add_amount, largeMl), waterActionIntent(context, largeMl))
+            .build()
+
+        NotificationManagerCompat.from(context).notify(WATER_NOTIFICATION_ID, notification)
+    }
+
+    fun cancelWaterReminder(context: Context) {
+        NotificationManagerCompat.from(context).cancel(WATER_NOTIFICATION_ID)
+    }
+
+    private fun waterActionIntent(context: Context, mlAmount: Int): PendingIntent {
+        val intent = Intent(context, WaterReminderActionReceiver::class.java)
+            .putExtra(WaterReminderActionReceiver.EXTRA_ML_AMOUNT, mlAmount)
+        return PendingIntent.getBroadcast(
+            context,
+            mlAmount, // distinct request code per amount, so the two actions don't collide
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+    }
 }
 
 /** Renders digest items into notification lines. Kept next to the poster that uses them. */

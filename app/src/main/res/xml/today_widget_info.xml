@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Provider metadata for the "Today" home-screen widget (session 12).
+  updatePeriodMillis is Android's background-refresh floor (30 min is the
+  documented practical minimum the OS honours) — freshness the rest of the time
+  comes from explicit updateAll() calls after a habit toggle or water log,
+  not from this value. See TodayWidget.kt.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:previewImage="@mipmap/ic_launcher"
+    android:description="@string/widget_today_description" />

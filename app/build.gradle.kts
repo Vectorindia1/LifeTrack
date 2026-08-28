@@ -84,6 +84,10 @@ dependencies {
     // Charting. Declared now; first chart lands in Milestone 2. See MEMORY.md.
     implementation(libs.vico.compose.m3)
 
+    // Home screen widget (session 12). Glance, not classic RemoteViews — matches the
+    // rest of the app's declarative-UI style even though it's a different runtime.
+    implementation(libs.androidx.glance.appwidget)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -17,10 +17,33 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [ ] 11. Polish (theming, empty states, animations, dark mode)
 - [ ] 12. (Stretch) CSV export
 - [x] 13. Period tracker (added 2026-08-29, post-v1)
+- [x] 14. Home screen widget (added 2026-08-29, post-v1)
+- [x] 15. Interval water reminder (added 2026-08-29, post-v1)
 
 ---
 
 ## Session Log
+
+### Session 12 (continued 3) — 2026-08-29
+Two more post-v1 features by request: a home screen widget, and an interval water reminder.
+
+**Widget ("Today"):**
+- Built with Jetpack Glance (`androidx.glance:glance-appwidget:1.2.0` — verified its AAR needs only `minCompileSdk=35`, under our 36 ceiling, before adding it).
+- Shows habit count and water progress, with a one-tap **+250ml** button that writes directly without opening the app.
+- Refreshes immediately after a dashboard habit toggle or water quick-add, plus a 30-minute background floor as fallback.
+- Every Glance API used (`Column`/`Row`/`Text`/`Button`/`GlanceModifier`/`actionRunCallback`/`actionStartActivity`/`SizeMode`) was confirmed via `javap` against the actual AAR — Glance's composables are a distinct, smaller API from full Compose, not a subset with the same names.
+
+**Interval water reminder:**
+- A recurring "drink water" notification, interval configurable in Settings (15/30/60/90/120 min), **off by default**.
+- **Explicitly flagged to the user before building**: this is a deliberate exception to PRD section 8's "never more than ~3 pushes/day" and 7.8's "one consolidated notification" rules, both enforced everywhere else in this app since session 0. Built as a fully separate system (own preference fields, own notification channel, own WorkManager job) specifically so it cannot be accidentally merged into the digest later and reintroduce spam there.
+- Uses `PeriodicWorkRequest`, not an `AlarmManager` exact alarm — avoids the `SCHEDULE_EXACT_ALARM` Play Store policy exposure that would come with a literal "alarm," while still delivering an audible, recurring notification.
+- Reuses the digest's existing 08:00–22:00 waking-hours window; stops firing once the day's water target is met; notification includes +250ml/+500ml actions that log directly via a `BroadcastReceiver`.
+
+**Migration:** v5→v6 adds `waterReminderEnabled`/`waterReminderIntervalMinutes` — the first NOT NULL columns added via `ALTER TABLE` in this project (earlier additions were nullable). Confirmed Room's migration validation for this version doesn't track column defaults at all, only name/type/notNull/pk, by inspecting the exported schema JSON directly.
+
+**Verified:** `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, zero warnings, **82/82 tests pass** (unchanged — both features are new surface, not new pure logic needing new test coverage beyond what's already proven). Confirmed both new `<receiver>` entries actually landed in the built APK's manifest. Caught and reverted my own mistake mid-session: the string-usage audit script only scans `.kt` files, so it flagged the widget's `android:description` string (referenced only from XML) as dead and I deleted it — rebuilt, saw the XML reference break, restored it, documented the audit's blind spot inline as a comment so it isn't repeated.
+
+**Not verified, as always:** neither the widget nor the water reminder has been seen on a device. Specifically unverified: whether the widget actually appears in the home-screen widget picker and renders without a Glance runtime crash, and whether the water reminder notification is genuinely audible (channel importance is correct in code, but device-level Do Not Disturb / notification settings could still silence it).
 
 ### Session 12 (continued 2) — 2026-08-29
 Two more fixes from a screenshot: icon-only bottom nav, and a currency preference.

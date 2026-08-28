@@ -52,6 +52,7 @@ import com.lifetrack.water.ui.WaterQuickAddRow
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable
 fun DashboardScreen(
@@ -61,6 +62,8 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     // Re-read the date on resume so a session left open overnight isn't stuck on yesterday.
     LifecycleResumeEffect(Unit) {
@@ -68,10 +71,17 @@ fun DashboardScreen(
         onPauseOrDispose { }
     }
 
+    // Nudge the "Today" widget to refresh right away rather than waiting for its
+    // 30-minute background floor — these are the two actions most likely to be done
+    // from the dashboard and then checked on the widget a moment later.
+    fun refreshWidget() {
+        scope.launch { com.lifetrack.widget.TodayWidget.refresh(context) }
+    }
+
     DashboardContent(
         uiState = uiState,
-        onToggle = viewModel::toggle,
-        onAddWater = viewModel::addWater,
+        onToggle = { item -> viewModel.toggle(item); refreshWidget() },
+        onAddWater = { ml -> viewModel.addWater(ml); refreshWidget() },
         onOpen = onOpen,
         contentPadding = contentPadding,
         modifier = modifier,

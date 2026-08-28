@@ -25,6 +25,15 @@ class PreferencesRepository(private val dao: AppPreferencesDao) {
     /** Null resets to "follow the device locale" — see [AppPreferences.currencyLocaleTag]. */
     suspend fun setCurrencyLocaleTag(tag: String?) = update { it.copy(currencyLocaleTag = tag) }
 
+    /**
+     * WorkManager's own floor for a `PeriodicWorkRequest` is 15 minutes; anything
+     * below that would silently be clamped up by the OS anyway, so clamp here where
+     * it's visible instead.
+     */
+    suspend fun setWaterReminder(enabled: Boolean, intervalMinutes: Int) = update {
+        it.copy(waterReminderEnabled = enabled, waterReminderIntervalMinutes = intervalMinutes.coerceAtLeast(15))
+    }
+
     private suspend fun update(transform: (AppPreferences) -> AppPreferences) {
         dao.upsert(transform(preferences.first()))
     }

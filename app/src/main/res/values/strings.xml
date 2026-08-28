@@ -264,4 +264,18 @@
     <!-- Dashboard period card -->
     <string name="dashboard_period_title">Period</string>
     <string name="dashboard_period_prompt">Not logged yet</string>
+    <!-- Home screen widget (session 12) -->
+    <!-- Interval water reminder (session 12) -->
+    <string name="water_reminder_channel_name">Water reminders</string>
+    <string name="water_reminder_channel_desc">A recurring nudge to drink water, separate from the daily digest. On only if you turn it on.</string>
+    <string name="water_reminder_title">Time to drink water</string>
+    <string name="settings_water_reminder">Water reminder</string>
+    <string name="settings_water_reminder_toggle">Remind me to drink water</string>
+    <string name="settings_water_reminder_note">Separate from the daily digest above — this can ring more than once an hour, so it\'s off by default.</string>
+    <string name="settings_water_reminder_interval">Every %1$d min</string>
+
+    <!-- Referenced from res/xml/today_widget_info.xml, not from Kotlin — the
+         string-usage audit script only scans .kt files, so this one won't show up
+         there as "used"; don't delete it on that basis again. -->
+    <string name="widget_today_description">Today\'s habits and water, with a quick +250ml button.</string>
 </resources>

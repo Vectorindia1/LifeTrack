@@ -31,6 +31,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- "Today" home-screen widget (session 12). exported=true is required for
+             widget receivers — the launcher process binds to it, not this app. -->
+        <receiver
+            android:name=".widget.TodayWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/today_widget_info" />
+        </receiver>
+
+        <!-- Handles the +250ml/+500ml action buttons on the water reminder
+             notification (session 12). Not exported: only this app's own
+             PendingIntents ever target it. -->
+        <receiver
+            android:name=".notification.WaterReminderActionReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

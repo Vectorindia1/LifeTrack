@@ -45,7 +45,7 @@ import com.lifetrack.water.data.WaterLog
         AppPreferences::class,
         PeriodLog::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -75,7 +75,7 @@ abstract class LifeTrackDatabase : RoomDatabase() {
         private fun build(context: Context): LifeTrackDatabase =
             Room.databaseBuilder(context, LifeTrackDatabase::class.java, DATABASE_NAME)
                 .addCallback(SeedCallback)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
 
         /**
@@ -180,6 +180,23 @@ abstract class LifeTrackDatabase : RoomDatabase() {
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE app_preferences ADD COLUMN currencyLocaleTag TEXT")
+            }
+        }
+
+        /**
+         * v5 -> v6: adds the interval water-reminder columns. Both NOT NULL with a
+         * SQL-level DEFAULT matching the Kotlin defaults exactly (0 for false,
+         * 60 for the interval), since SQLite requires a default for a NOT NULL
+         * column added via ALTER TABLE. Verified against the exported v6 schema.
+         */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE app_preferences ADD COLUMN waterReminderEnabled INTEGER NOT NULL DEFAULT 0",
+                )
+                db.execSQL(
+                    "ALTER TABLE app_preferences ADD COLUMN waterReminderIntervalMinutes INTEGER NOT NULL DEFAULT 60",
+                )
             }
         }
 

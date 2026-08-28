@@ -123,6 +123,22 @@ Added by user request, not part of the original v1 scope. Deliberately minimal:
 - **Wording throughout is neutral about whose cycle is being tracked.** This app is single-user; that one user might be logging their own periods, or someone else's (e.g. a partner's) on their behalf. Copy avoids "my period" / gendered phrasing for exactly that reason — see MEMORY.md.
 - No symptom or flow-intensity tracking in this version.
 
+### 7.11 Home Screen Widget (added 2026-08-29, post-v1)
+Added by user request. A "Today" widget showable on the Android home screen:
+- Shows today's habit count (done/due) and water progress (drunk/target).
+- One-tap **+250ml** button, logging water without opening the app.
+- Tapping the rest of the widget opens the app.
+- Refreshes immediately after a habit toggle or water quick-add made from the dashboard, plus a 30-minute background refresh floor (the OS-enforced minimum for widget provider updates) as a fallback for changes made elsewhere.
+- Built with Jetpack Glance, not classic RemoteViews, for consistency with the rest of the app's declarative-UI style — see MEMORY.md for the exact API surface this was verified against and why compileSdk 35 (Glance's floor) still fits under this project's compileSdk 36 ceiling.
+
+### 7.12 Interval Water Reminder (added 2026-08-29, post-v1)
+Added by user request: a recurring "drink water" nudge every N minutes, **separate from and in addition to** the water check already in the consolidated daily digest (7.8).
+- **Off by default.** Turned on in Settings, with a configurable interval (15/30/60/90/120 min).
+- Fires only during waking hours (reuses 7.8's 08:00–22:00 window) and stops for the day once the water target is met.
+- Uses a distinct, audible notification channel — unlike the digest's deliberately quiet channel — so it can actually get attention, per the user's request. Notification includes +250ml/+500ml actions that log water directly.
+- **This is a deliberate, acknowledged exception to section 8's "never more than ~3 pushes/day" rule and to 7.8's "one consolidated notification" principle** — made because the user explicitly asked for a repeating alert, not a daily summary. It does not change the digest's behavior; the two systems are independent. See MEMORY.md.
+- Implemented as a `PeriodicWorkRequest`, not an `AlarmManager` exact alarm — the latter needs `SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM`, both subject to Play Store policy review intended for actual alarm-clock apps. The trade-off is the OS may shift the exact firing minute by a few minutes around Doze; acceptable for a "roughly every N minutes" reminder.
+
 ### 7.9 Settings
 - Set daily targets (calories, water, ml increments)
 - Configure notification times / toggle categories
@@ -157,6 +173,8 @@ Added by user request, not part of the original v1 scope. Deliberately minimal:
 11. Polish: theming, empty states, animations, dark mode
 12. (Stretch) CSV export
 13. Period tracker (added 2026-08-29, post-v1 — see section 7.10)
+14. Home screen widget (added 2026-08-29, post-v1 — see section 7.11)
+15. Interval water reminder (added 2026-08-29, post-v1 — see section 7.12)
 
 ## 11. Open Questions
 - Should habit "frequency" support custom day-of-week schedules in v1, or just daily/weekly?

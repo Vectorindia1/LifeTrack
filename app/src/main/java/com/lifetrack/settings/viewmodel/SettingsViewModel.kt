@@ -93,6 +93,14 @@ class SettingsViewModel(
         viewModelScope.launch { preferencesRepository.setCurrencyLocaleTag(option.tag) }
     }
 
+    /** Re-applies scheduling immediately, same as a reminder-time edit does for the digest. */
+    fun setWaterReminder(enabled: Boolean, intervalMinutes: Int) {
+        viewModelScope.launch {
+            preferencesRepository.setWaterReminder(enabled, intervalMinutes)
+            com.lifetrack.notification.work.WaterReminderScheduler.apply(context)
+        }
+    }
+
     fun setWaterIncrements(smallMl: Int, largeMl: Int) {
         viewModelScope.launch { preferencesRepository.setWaterIncrements(smallMl, largeMl) }
     }
