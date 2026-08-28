@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">LifeTrack</string>
+
+    <!-- Destinations / bottom navigation -->
+    <string name="dest_dashboard">Today</string>
+    <string name="dest_habits">Habits</string>
+    <string name="dest_goals">Goals</string>
+    <string name="dest_expenses">Expenses</string>
+    <string name="dest_calories">Calories</string>
+    <string name="dest_water">Water</string>
+    <string name="dest_diary">Diary</string>
+    <string name="dest_settings">Settings</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Today</string>
+    <string name="dashboard_open">Open</string>
+
+    <!-- Milestone-1 placeholder scaffolding -->
+    <string name="placeholder_coming_in_milestone">Coming in milestone %1$d</string>
+    <string name="placeholder_habits_body">Add habits, tick them off daily, watch the streak build.</string>
+    <string name="placeholder_goals_body">Set a target, nudge the number up, see the deadline coming.</string>
+    <string name="placeholder_expenses_body">Amount, category, done. Totals and a breakdown by category.</string>
+    <string name="placeholder_calories_body">Log food and calories against a daily target.</string>
+    <string name="placeholder_water_body">Quick +250 ml / +500 ml taps against a daily target.</string>
+    <string name="placeholder_diary_body">One entry a day, a mood tag, and a calendar to look back.</string>
+    <string name="placeholder_settings_body">Daily targets, reminder times, habit and category management.</string>
+
+    <!-- Database status card (temporary: replaced by the real dashboard in milestone 3) -->
+    <string name="db_status_title">Database</string>
+    <string name="db_status_ready">Room is live — %1$d tables, seeded and readable.</string>
+    <string name="db_status_loading">Opening database…</string>
+    <string name="db_status_detail">Habits %1$d · Goals %2$d · Expenses %3$d · Diary %4$d</string>
+    <string name="db_status_targets">Targets: %1$d kcal · %2$d ml water</string>
+    <!-- Habit tracker (milestone 2) -->
+    <string name="habit_add">Add habit</string>
+    <string name="habit_add_title">New habit</string>
+    <string name="habit_name_label">Habit name</string>
+    <string name="habit_frequency_label">How often?</string>
+    <string name="habit_freq_daily">Every day</string>
+    <string name="habit_freq_weekly">Times per week</string>
+    <string name="habit_freq_custom">Certain days</string>
+    <string name="habit_times_per_week">%1$d× per week</string>
+    <string name="habit_save">Save</string>
+    <string name="habit_cancel">Cancel</string>
+    <string name="habit_delete">Delete habit</string>
+    <string name="habit_streak">%1$d day streak</string>
+    <string name="habit_streak_weeks">%1$d week streak</string>
+    <string name="habit_streak_none">No streak yet</string>
+    <string name="habit_not_today">Not scheduled today</string>
+    <string name="habit_empty_title">No habits yet</string>
+    <string name="habit_empty_body">Add one thing you want to do regularly. One tap a day is all it takes.</string>
+    <string name="habit_toggle_desc">Mark %1$s as done today</string>
+    <string name="habit_chart_title">Completion rate</string>
+    <string name="habit_chart_weeks">Weeks</string>
+    <string name="habit_chart_months">Months</string>
+    <string name="habit_chart_empty">Log a few days and a chart will appear here.</string>
+    <string name="habit_today_progress">%1$d of %2$d done today</string>
+
+    <!-- Day-of-week initials for the custom-schedule picker -->
+    <string name="day_mon">M</string>
+    <string name="day_tue">T</string>
+    <string name="day_wed">W</string>
+    <string name="day_thu">T</string>
+    <string name="day_fri">F</string>
+    <string name="day_sat">S</string>
+    <string name="day_sun">S</string>
+</resources>
