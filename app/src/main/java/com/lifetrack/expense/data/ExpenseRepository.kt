@@ -22,6 +22,14 @@ class ExpenseRepository(private val dao: ExpenseDao) {
         )
     }
 
+    fun observeCategoryUsage(): Flow<List<CategoryUsage>> = dao.observeCategoryUsage()
+
+    suspend fun renameCategory(from: String, to: String) {
+        val target = to.trim()
+        if (target.isEmpty() || target == from) return
+        dao.renameCategory(from, target)
+    }
+
     suspend fun delete(expense: Expense) = dao.delete(expense)
 }
 

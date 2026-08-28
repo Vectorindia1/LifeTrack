@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.lifetrack.calorie.data.CalorieDao
@@ -40,8 +41,9 @@ import com.lifetrack.water.data.WaterLog
         WaterGoal::class,
         DiaryEntry::class,
         NotificationSettings::class,
+        AppPreferences::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -54,6 +56,7 @@ abstract class LifeTrackDatabase : RoomDatabase() {
     abstract fun waterDao(): WaterDao
     abstract fun diaryDao(): DiaryDao
     abstract fun notificationSettingsDao(): NotificationSettingsDao
+    abstract fun appPreferencesDao(): AppPreferencesDao
 
     companion object {
         const val DATABASE_NAME = "lifetrack.db"
@@ -69,7 +72,38 @@ abstract class LifeTrackDatabase : RoomDatabase() {
         private fun build(context: Context): LifeTrackDatabase =
             Room.databaseBuilder(context, LifeTrackDatabase::class.java, DATABASE_NAME)
                 .addCallback(SeedCallback)
+                .addMigrations(MIGRATION_1_2)
                 .build()
+
+        /**
+         * v1 -> v2: adds `app_preferences` (theme and the configurable water
+         * quick-add increments) for the milestone-10 settings screen.
+         *
+         * The default row is inserted here as well as in [SeedCallback], because a
+         * migrating install never runs onCreate — without this, existing users would
+         * get a table with no row and fall back to defaults forever.
+         */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Copied verbatim from the exported schema (app/schemas/.../2.json) so
+                // Room's post-migration validation cannot fail on a formatting
+                // difference. Regenerate from the schema if this table ever changes.
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `app_preferences` (`id` INTEGER NOT NULL, `themeMode` TEXT NOT NULL, `waterIncrementSmallMl` INTEGER NOT NULL, `waterIncrementLargeMl` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+                )
+                db.execSQL(
+                    "INSERT OR IGNORE INTO app_preferences " +
+                        "(id, themeMode, waterIncrementSmallMl, waterIncrementLargeMl) " +
+                        "VALUES (?, ?, ?, ?)",
+                    arrayOf<Any>(
+                        AppPreferences.SINGLETON_ID,
+                        ThemeMode.SYSTEM.name,
+                        AppPreferences.DEFAULT_SMALL_ML,
+                        AppPreferences.DEFAULT_LARGE_ML,
+                    ),
+                )
+            }
+        }
 
         /**
          * Seeds the rows the app assumes always exist: the two singleton target
@@ -86,6 +120,17 @@ abstract class LifeTrackDatabase : RoomDatabase() {
                 db.execSQL(
                     "INSERT INTO water_goal (id, dailyTargetMl) VALUES (?, ?)",
                     arrayOf<Any>(WaterGoal.SINGLETON_ID, WaterGoal.DEFAULT_DAILY_TARGET_ML),
+                )
+                db.execSQL(
+                    "INSERT INTO app_preferences " +
+                        "(id, themeMode, waterIncrementSmallMl, waterIncrementLargeMl) " +
+                        "VALUES (?, ?, ?, ?)",
+                    arrayOf<Any>(
+                        AppPreferences.SINGLETON_ID,
+                        ThemeMode.SYSTEM.name,
+                        AppPreferences.DEFAULT_SMALL_ML,
+                        AppPreferences.DEFAULT_LARGE_ML,
+                    ),
                 )
                 DEFAULT_REMINDERS.forEach { (feature, time) ->
                     db.execSQL(

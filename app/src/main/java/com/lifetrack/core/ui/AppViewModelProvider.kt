@@ -8,6 +8,7 @@ import com.lifetrack.LifeTrackApplication
 import com.lifetrack.dashboard.viewmodel.DashboardViewModel
 import com.lifetrack.calorie.viewmodel.CalorieViewModel
 import com.lifetrack.diary.viewmodel.DiaryViewModel
+import com.lifetrack.settings.viewmodel.SettingsViewModel
 import com.lifetrack.expense.viewmodel.ExpenseViewModel
 import com.lifetrack.goal.viewmodel.GoalViewModel
 import com.lifetrack.habit.viewmodel.HabitViewModel
@@ -25,12 +26,28 @@ object AppViewModelProvider {
                 waterRepository = lifeTrackApplication().container.waterRepository,
                 goalRepository = lifeTrackApplication().container.goalRepository,
                 diaryRepository = lifeTrackApplication().container.diaryRepository,
+                preferencesRepository = lifeTrackApplication().container.preferencesRepository,
             )
         }
         initializer { HabitViewModel(lifeTrackApplication().container.habitRepository) }
         initializer { ExpenseViewModel(lifeTrackApplication().container.expenseRepository) }
         initializer { CalorieViewModel(lifeTrackApplication().container.calorieRepository) }
-        initializer { WaterViewModel(lifeTrackApplication().container.waterRepository) }
+        initializer {
+            val app = lifeTrackApplication()
+            WaterViewModel(app.container.waterRepository, app.container.preferencesRepository)
+        }
+        initializer {
+            val app = lifeTrackApplication()
+            SettingsViewModel(
+                context = app,
+                preferencesRepository = app.container.preferencesRepository,
+                calorieRepository = app.container.calorieRepository,
+                waterRepository = app.container.waterRepository,
+                notificationRepository = app.container.notificationSettingsRepository,
+                habitRepository = app.container.habitRepository,
+                expenseRepository = app.container.expenseRepository,
+            )
+        }
         initializer { GoalViewModel(lifeTrackApplication().container.goalRepository) }
         initializer {
             val container = lifeTrackApplication().container

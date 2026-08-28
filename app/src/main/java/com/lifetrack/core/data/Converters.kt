@@ -48,6 +48,12 @@ class Converters {
     fun stringToMood(value: String?): Mood? = value?.let(Mood::valueOf)
 
     @TypeConverter
+    fun themeModeToString(value: ThemeMode?): String? = value?.name
+
+    @TypeConverter
+    fun stringToThemeMode(value: String?): ThemeMode? = value?.let(ThemeMode::valueOf)
+
+    @TypeConverter
     fun featureTypeToString(value: FeatureType?): String? = value?.name
 
     @TypeConverter

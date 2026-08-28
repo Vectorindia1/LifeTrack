@@ -213,7 +213,12 @@ private fun RingCard(
                 }
             }
 
-            WaterQuickAddRow(onAdd = onAdd, onCustom = onCustom)
+            WaterQuickAddRow(
+                smallMl = uiState.incrementSmallMl,
+                largeMl = uiState.incrementLargeMl,
+                onAdd = onAdd,
+                onCustom = onCustom,
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

@@ -284,6 +284,8 @@ private fun WaterCard(
                     },
                 )
                 WaterQuickAddRow(
+                    smallMl = uiState.waterIncrementSmallMl,
+                    largeMl = uiState.waterIncrementLargeMl,
                     onAdd = onAddWater,
                     onCustom = { onOpen(Destination.Water) },
                 )

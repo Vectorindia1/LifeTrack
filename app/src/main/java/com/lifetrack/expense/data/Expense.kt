@@ -22,3 +22,9 @@ data class Expense(
     val note: String? = null,
     val timestamp: Instant = Instant.now(),
 )
+
+/** How many expenses use a given category. Drives the settings screen's category list. */
+data class CategoryUsage(
+    val category: String,
+    val count: Int,
+)

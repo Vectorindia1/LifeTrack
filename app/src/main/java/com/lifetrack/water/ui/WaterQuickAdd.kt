@@ -20,7 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.lifetrack.R
-import com.lifetrack.water.viewmodel.WaterViewModel
 
 /**
  * PRD 7.6's quick-add row. These are single taps by design — logging water is the
@@ -28,6 +27,8 @@ import com.lifetrack.water.viewmodel.WaterViewModel
  */
 @Composable
 fun WaterQuickAddRow(
+    smallMl: Int,
+    largeMl: Int,
     onAdd: (Int) -> Unit,
     onCustom: () -> Unit,
     modifier: Modifier = Modifier,
@@ -36,17 +37,11 @@ fun WaterQuickAddRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Button(
-            onClick = { onAdd(WaterViewModel.QUICK_SMALL_ML) },
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(stringResource(R.string.water_add_small))
+        Button(onClick = { onAdd(smallMl) }, modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.water_add_amount, smallMl))
         }
-        Button(
-            onClick = { onAdd(WaterViewModel.QUICK_LARGE_ML) },
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(stringResource(R.string.water_add_large))
+        Button(onClick = { onAdd(largeMl) }, modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.water_add_amount, largeMl))
         }
         OutlinedButton(onClick = onCustom) {
             Text(stringResource(R.string.water_add_custom))

@@ -272,6 +272,26 @@ PRD 7.8 states the triggers but not the numbers. These are in `DailyDigest`, pin
 - Requested once on first launch (API 33+). **Nothing is gated on the answer**: refusing means no digest, and every tracker still works exactly as before, so the result is ignored rather than re-prompted.
 - `INTERNET` is still absent — verified in the built APK. PRD 8's offline requirement continues to hold.
 
+### 2026-08-28 (session 10) — First Room migration: v1 → v2, `app_preferences`
+- Adds a single-row `app_preferences` table (theme + the configurable water quick-add increments), matching the pattern already used by `calorie_goal` and `water_goal`.
+- **Chose Room over DataStore** for these preferences: one storage mechanism is simpler to reason about than two, and these values are read alongside other Room data anyway. Recorded because adding DataStore later would now be a contradiction, not a free choice.
+- **The migration's `CREATE TABLE` is copied verbatim from the exported schema** (`app/schemas/.../2.json`). Room validates the post-migration schema against that file and crashes on a mismatch, so hand-writing "equivalent" SQL is a real hazard — `id INTEGER NOT NULL PRIMARY KEY` versus `PRIMARY KEY(\`id\`)` is exactly the kind of difference that invites a crash on upgrade.
+- **The default row is inserted in both `SeedCallback` and the migration.** A migrating install never runs `onCreate`; without the migration insert, existing users would get an empty table and silently fall back to defaults forever.
+- **Procedure for the next migration:** change the entity, bump `version`, build once to regenerate the schema JSON, then copy that file's `createSql` into the migration verbatim.
+
+### 2026-08-28 (session 10) — Settings owns the targets; the shortcuts stayed
+- Calorie and water targets are now editable in Settings, as PRD 7.9 intends.
+- **The in-place dialogs on the calorie and water screens were kept**, not removed. They were introduced as temporary in milestones 5 and 6, but adjusting a target while looking at the tracker is genuinely fewer taps than navigating to Settings, and both paths write through the same repository, so they cannot disagree.
+- Water quick-add amounts (PRD 7.9's "ml increments") moved from constants to `app_preferences`, so `WaterViewModel.QUICK_SMALL_ML` / `QUICK_LARGE_ML` **no longer exist** — read them from state.
+
+### 2026-08-28 (session 10) — Expense categories are renamed by bulk-updating rows
+- There is still no category table (see the milestone-4 entry). "Rename" is `UPDATE expenses SET category = ? WHERE category = ?`, and the settings screen shows each category's entry count so the blast radius is visible before confirming.
+- Deleting a category is deliberately **not** offered: it would either orphan rows or silently rewrite them. Renaming to an existing name merges the two, which is the useful behaviour anyway.
+
+### 2026-08-28 (session 10) — Changing a reminder re-arms the scheduler immediately
+- `SettingsViewModel` calls `DigestScheduler.scheduleNext` after every reminder edit, so a new time takes effect from the next check rather than the next app launch.
+- This is why `SettingsViewModel` takes a `Context` — the only ViewModel that does. It is the application context, supplied by the factory, not an Activity.
+
 ---
 
 ## Known Gotchas / Things to Watch

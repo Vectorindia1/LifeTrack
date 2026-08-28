@@ -32,6 +32,9 @@ class AppContainer(context: Context) {
     val waterRepository: WaterRepository by lazy { WaterRepository(waterDao) }
     val goalRepository: GoalRepository by lazy { GoalRepository(goalDao) }
     val diaryRepository: DiaryRepository by lazy { DiaryRepository(diaryDao) }
+    val preferencesRepository: PreferencesRepository by lazy {
+        PreferencesRepository(database.appPreferencesDao())
+    }
     val notificationSettingsRepository: NotificationSettingsRepository by lazy {
         NotificationSettingsRepository(notificationSettingsDao)
     }

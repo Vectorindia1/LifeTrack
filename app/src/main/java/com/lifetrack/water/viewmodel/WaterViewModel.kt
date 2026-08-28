@@ -2,6 +2,8 @@ package com.lifetrack.water.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lifetrack.core.data.AppPreferences
+import com.lifetrack.core.data.PreferencesRepository
 import com.lifetrack.water.data.WaterGoal
 import com.lifetrack.water.data.WaterLog
 import com.lifetrack.water.data.WaterRepository
@@ -24,6 +26,8 @@ data class WaterUiState(
     val drunkToday: Int = 0,
     val todaysLogs: List<WaterLog> = emptyList(),
     val week: List<DayWater> = emptyList(),
+    val incrementSmallMl: Int = AppPreferences.DEFAULT_SMALL_ML,
+    val incrementLargeMl: Int = AppPreferences.DEFAULT_LARGE_ML,
 ) {
     val progress: Float
         get() = if (targetMl <= 0) 0f else (drunkToday.toFloat() / targetMl).coerceIn(0f, 1f)
@@ -32,7 +36,10 @@ data class WaterUiState(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class WaterViewModel(private val repository: WaterRepository) : ViewModel() {
+class WaterViewModel(
+    private val repository: WaterRepository,
+    preferencesRepository: PreferencesRepository,
+) : ViewModel() {
 
     private val today = MutableStateFlow(LocalDate.now())
 
@@ -40,7 +47,8 @@ class WaterViewModel(private val repository: WaterRepository) : ViewModel() {
         today.flatMapLatest { repository.observeLogsBetween(it.minusDays(6), it) },
         repository.observeGoal(),
         today,
-    ) { logs, goal, today ->
+        preferencesRepository.preferences,
+    ) { logs, goal, today, preferences ->
         val zone = ZoneId.systemDefault()
         val byDate = logs.groupBy { it.timestamp.atZone(zone).toLocalDate() }
 
@@ -53,6 +61,8 @@ class WaterViewModel(private val repository: WaterRepository) : ViewModel() {
                 val date = today.minusDays(back.toLong())
                 DayWater(date, byDate[date].orEmpty().sumOf { it.mlAmount })
             },
+            incrementSmallMl = preferences.waterIncrementSmallMl,
+            incrementLargeMl = preferences.waterIncrementLargeMl,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -83,9 +93,4 @@ class WaterViewModel(private val repository: WaterRepository) : ViewModel() {
         viewModelScope.launch { repository.setDailyTargetMl(target) }
     }
 
-    companion object {
-        /** PRD 7.6's quick-add amounts. */
-        const val QUICK_SMALL_ML = 250
-        const val QUICK_LARGE_ML = 500
-    }
 }

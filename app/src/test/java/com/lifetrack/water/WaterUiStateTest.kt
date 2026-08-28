@@ -1,7 +1,7 @@
 package com.lifetrack.water
 
 import com.lifetrack.water.viewmodel.WaterUiState
-import com.lifetrack.water.viewmodel.WaterViewModel
+import com.lifetrack.core.data.AppPreferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -44,8 +44,9 @@ class WaterUiStateTest {
     }
 
     @Test
-    fun `quick add amounts match PRD 7 dot 6`() {
-        assertEquals(250, WaterViewModel.QUICK_SMALL_ML)
-        assertEquals(500, WaterViewModel.QUICK_LARGE_ML)
+    fun `default quick add amounts match PRD 7 dot 6`() {
+        // Configurable since milestone 10, but these remain the defaults.
+        assertEquals(250, AppPreferences.DEFAULT_SMALL_ML)
+        assertEquals(500, AppPreferences.DEFAULT_LARGE_ML)
     }
 }

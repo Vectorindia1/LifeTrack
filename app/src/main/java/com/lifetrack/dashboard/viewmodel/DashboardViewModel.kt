@@ -3,6 +3,8 @@ package com.lifetrack.dashboard.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lifetrack.calorie.data.CalorieGoal
+import com.lifetrack.core.data.AppPreferences
+import com.lifetrack.core.data.PreferencesRepository
 import com.lifetrack.calorie.data.CalorieLog
 import com.lifetrack.calorie.data.CalorieRepository
 import com.lifetrack.diary.data.DiaryEntry
@@ -49,6 +51,8 @@ data class DashboardUiState(
     val totalActiveGoals: Int = 0,
     val diaryWrittenToday: Boolean = false,
     val diaryStreak: Int = 0,
+    val waterIncrementSmallMl: Int = AppPreferences.DEFAULT_SMALL_ML,
+    val waterIncrementLargeMl: Int = AppPreferences.DEFAULT_LARGE_ML,
 ) {
     val hasMoreGoals: Boolean get() = totalActiveGoals > topGoals.size
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
@@ -93,6 +97,7 @@ class DashboardViewModel(
     private val waterRepository: WaterRepository,
     private val goalRepository: GoalRepository,
     private val diaryRepository: DiaryRepository,
+    preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
     /**
@@ -121,7 +126,8 @@ class DashboardViewModel(
         habitRepository.observeHabits(),
         dayData,
         goalRepository.observeGoals(),
-    ) { habits, (date, data), goals ->
+        preferencesRepository.preferences,
+    ) { habits, (date, data), goals, preferences ->
         val completedByHabit = data.completions
             .groupBy { it.habitId }
             .mapValues { (_, entries) -> entries.mapTo(mutableSetOf()) { it.date } }
@@ -155,6 +161,8 @@ class DashboardViewModel(
                 data.diaryEntries.mapTo(mutableSetOf()) { it.date },
                 date,
             ),
+            waterIncrementSmallMl = preferences.waterIncrementSmallMl,
+            waterIncrementLargeMl = preferences.waterIncrementLargeMl,
         )
     }.stateIn(
         scope = viewModelScope,

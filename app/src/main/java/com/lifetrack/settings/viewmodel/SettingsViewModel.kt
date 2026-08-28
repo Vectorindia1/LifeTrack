@@ -1,0 +1,124 @@
+package com.lifetrack.settings.viewmodel
+
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.lifetrack.calorie.data.CalorieGoal
+import com.lifetrack.calorie.data.CalorieRepository
+import com.lifetrack.core.data.AppPreferences
+import com.lifetrack.core.data.PreferencesRepository
+import com.lifetrack.core.data.ThemeMode
+import com.lifetrack.expense.data.CategoryUsage
+import com.lifetrack.expense.data.ExpenseRepository
+import com.lifetrack.habit.data.Habit
+import com.lifetrack.habit.data.HabitRepository
+import com.lifetrack.notification.data.FeatureType
+import com.lifetrack.notification.data.NotificationSettings
+import com.lifetrack.notification.data.NotificationSettingsRepository
+import com.lifetrack.notification.work.DigestScheduler
+import com.lifetrack.water.data.WaterGoal
+import com.lifetrack.water.data.WaterRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.time.LocalTime
+
+data class SettingsUiState(
+    val isLoading: Boolean = true,
+    val preferences: AppPreferences = AppPreferences(),
+    val calorieTarget: Int = CalorieGoal.DEFAULT_DAILY_TARGET,
+    val waterTargetMl: Int = WaterGoal.DEFAULT_DAILY_TARGET_ML,
+    val reminders: List<NotificationSettings> = emptyList(),
+    val habits: List<Habit> = emptyList(),
+    val categories: List<CategoryUsage> = emptyList(),
+) {
+    /** Reminders grouped for display; water legitimately has two rows. */
+    val remindersByFeature: Map<FeatureType, List<NotificationSettings>>
+        get() = reminders.groupBy { it.featureType }
+}
+
+class SettingsViewModel(
+    private val context: Context,
+    private val preferencesRepository: PreferencesRepository,
+    private val calorieRepository: CalorieRepository,
+    private val waterRepository: WaterRepository,
+    private val notificationRepository: NotificationSettingsRepository,
+    private val habitRepository: HabitRepository,
+    private val expenseRepository: ExpenseRepository,
+) : ViewModel() {
+
+    private val targets = combine(
+        calorieRepository.observeGoal(),
+        waterRepository.observeGoal(),
+    ) { calorie, water -> calorie to water }
+
+    private val management = combine(
+        habitRepository.observeHabits(),
+        expenseRepository.observeCategoryUsage(),
+    ) { habits, categories -> habits to categories }
+
+    val uiState: StateFlow<SettingsUiState> = combine(
+        preferencesRepository.preferences,
+        targets,
+        notificationRepository.observeAll(),
+        management,
+    ) { preferences, (calorieGoal, waterGoal), reminders, (habits, categories) ->
+        SettingsUiState(
+            isLoading = false,
+            preferences = preferences,
+            calorieTarget = calorieGoal?.dailyTarget ?: CalorieGoal.DEFAULT_DAILY_TARGET,
+            waterTargetMl = waterGoal?.dailyTargetMl ?: WaterGoal.DEFAULT_DAILY_TARGET_ML,
+            reminders = reminders,
+            habits = habits,
+            categories = categories,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SettingsUiState(),
+    )
+
+    fun setTheme(mode: ThemeMode) {
+        viewModelScope.launch { preferencesRepository.setThemeMode(mode) }
+    }
+
+    fun setWaterIncrements(smallMl: Int, largeMl: Int) {
+        viewModelScope.launch { preferencesRepository.setWaterIncrements(smallMl, largeMl) }
+    }
+
+    fun setCalorieTarget(target: Int) {
+        viewModelScope.launch { calorieRepository.setDailyTarget(target) }
+    }
+
+    fun setWaterTarget(targetMl: Int) {
+        viewModelScope.launch { waterRepository.setDailyTargetMl(targetMl) }
+    }
+
+    /**
+     * Every reminder change re-arms the scheduler, so a new time takes effect from the
+     * next check rather than the next app launch.
+     */
+    fun setReminderEnabled(feature: FeatureType, enabled: Boolean) {
+        viewModelScope.launch {
+            notificationRepository.setEnabled(feature, enabled)
+            DigestScheduler.scheduleNext(context)
+        }
+    }
+
+    fun setReminderTime(settings: NotificationSettings, time: LocalTime) {
+        viewModelScope.launch {
+            notificationRepository.upsert(settings.copy(reminderTime = time))
+            DigestScheduler.scheduleNext(context)
+        }
+    }
+
+    fun deleteHabit(habit: Habit) {
+        viewModelScope.launch { habitRepository.delete(habit) }
+    }
+
+    fun renameCategory(from: String, to: String) {
+        viewModelScope.launch { expenseRepository.renameCategory(from, to) }
+    }
+}

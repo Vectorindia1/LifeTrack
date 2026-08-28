@@ -13,13 +13,48 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 7. Goal tracker + dashboard integration
 - [x] 8. Diary + dashboard integration
 - [x] 9. Notification system (WorkManager, consolidated daily check)
-- [ ] 10. Settings screen
+- [x] 10. Settings screen
 - [ ] 11. Polish (theming, empty states, animations, dark mode)
 - [ ] 12. (Stretch) CSV export
 
 ---
 
 ## Session Log
+
+### Session 10 — 2026-08-28
+**Milestone 10 complete.** Settings screen, and the project's first Room migration.
+
+**Done this session:**
+- **Room migration v1 → v2** adding `app_preferences` (theme, water quick-add increments). Schema export has been on since milestone 1 precisely so this would be writable rather than guesswork.
+- `SettingsScreen` covering all of PRD 7.9 except CSV export (milestone 12): daily targets, quick-add amounts, reminder times with per-category toggles, habit management, expense category management, and a light/dark/system theme picker.
+- **Theme preference is applied app-wide** — `MainActivity` collects it and drives `LifeTrackTheme`, so dark mode now works independently of the system setting.
+- Water quick-add amounts became configurable, replacing the hardcoded constants everywhere they were used.
+- Expense category rename via bulk row update, with the entry count shown so the blast radius is visible.
+- Reminder edits re-arm the scheduler immediately.
+- **Deleted `PlaceholderScreen`** — every screen in the app is now real.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero warnings**.
+- **69/69 unit tests pass** via `--rerun-tasks`.
+- **The migration SQL was checked byte-for-byte against the exported schema.** My first attempt wrote `id INTEGER NOT NULL PRIMARY KEY` where Room expects `PRIMARY KEY(\`id\`)` — a difference that risks a crash on upgrade. It now copies `2.json`'s `createSql` verbatim, verified identical by script.
+- String resources audited — everything unused removed.
+
+**Decisions recorded in MEMORY.md:**
+- Room over DataStore for preferences, and why.
+- Migration SQL must be copied verbatim from the exported schema; the procedure for next time.
+- The calorie/water target shortcuts were **kept** rather than removed — fewer taps, same repository, so they cannot disagree.
+- Categories are renamed by bulk row update; deletion deliberately not offered.
+
+**Known issues / things to watch:**
+- All version pins from session 1 still apply.
+- **The migration has never actually run.** It is verified correct against the schema, but no v1 database has been upgraded to v2 on a real device. If you already installed an earlier build, the next install exercises it for real — that is the one thing worth watching when you test.
+
+**Next up — Milestone 11: Polish**
+1. Empty states exist for habits, expenses and goals; calories, water and diary could use the same treatment.
+2. Dark mode now has a real toggle and has **never been looked at** — the palette was written blind in milestone 1.
+3. Animations: the water ring already animates; transitions elsewhere are abrupt.
+4. Dashboard card ordering deserves judgement on a real screen now that all six sections exist.
+5. Milestone 12 (CSV export) remains a stretch goal.
 
 ### Session 9 — 2026-08-28
 **Milestone 9 complete.** Consolidated daily notification digest via WorkManager.
