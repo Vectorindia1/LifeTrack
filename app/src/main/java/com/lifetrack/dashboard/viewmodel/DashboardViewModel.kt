@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.lifetrack.calorie.data.CalorieGoal
 import com.lifetrack.calorie.data.CalorieLog
 import com.lifetrack.calorie.data.CalorieRepository
+import com.lifetrack.diary.data.DiaryEntry
+import com.lifetrack.diary.data.DiaryRepository
+import com.lifetrack.diary.data.DiaryStreak
 import com.lifetrack.expense.data.Expense
 import com.lifetrack.expense.data.ExpenseRepository
 import com.lifetrack.habit.data.HabitLog
@@ -44,6 +47,8 @@ data class DashboardUiState(
     /** Top few active goals, most urgent first. PRD 7.1 asks for 2-3 with a "see all". */
     val topGoals: List<GoalItem> = emptyList(),
     val totalActiveGoals: Int = 0,
+    val diaryWrittenToday: Boolean = false,
+    val diaryStreak: Int = 0,
 ) {
     val hasMoreGoals: Boolean get() = totalActiveGoals > topGoals.size
     val doneCount: Int get() = habitsDueToday.count { it.isDoneToday }
@@ -64,8 +69,8 @@ data class DashboardUiState(
  *
  * This exists because `combine`'s typed overloads stop at five flows and the
  * dashboard now aggregates more than that. Grouping the per-day sources here keeps
- * the top-level combine to two arguments and leaves room for goals and diary in
- * milestones 7 and 8.
+ * the top-level combine small. Day-scoped sources belong here; goals do not,
+ * because the goal list is the same whatever the date.
  */
 private data class DayData(
     val completions: List<HabitLog> = emptyList(),
@@ -74,11 +79,11 @@ private data class DayData(
     val water: List<WaterLog> = emptyList(),
     val calorieGoal: CalorieGoal? = null,
     val waterGoal: WaterGoal? = null,
+    val diaryEntries: List<DiaryEntry> = emptyList(),
 )
 
 /**
- * Dashboard v2 — habits, calories, spend and water. Goals and diary arrive with
- * milestones 7 and 8.
+ * The full PRD 7.1 dashboard: habits, water, calories, spend, goals and diary.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModel(
@@ -87,6 +92,7 @@ class DashboardViewModel(
     private val calorieRepository: CalorieRepository,
     private val waterRepository: WaterRepository,
     private val goalRepository: GoalRepository,
+    private val diaryRepository: DiaryRepository,
 ) : ViewModel() {
 
     /**
@@ -104,9 +110,10 @@ class DashboardViewModel(
             combine(
                 calorieRepository.observeGoal(),
                 waterRepository.observeGoal(),
-            ) { calorieGoal, waterGoal -> calorieGoal to waterGoal },
-        ) { completions, expenses, food, water, (calorieGoal, waterGoal) ->
-            date to DayData(completions, expenses, food, water, calorieGoal, waterGoal)
+                diaryRepository.observeRecentEntries(date),
+            ) { calorieGoal, waterGoal, diary -> Triple(calorieGoal, waterGoal, diary) },
+        ) { completions, expenses, food, water, (calorieGoal, waterGoal, diary) ->
+            date to DayData(completions, expenses, food, water, calorieGoal, waterGoal, diary)
         }
     }
 
@@ -143,6 +150,11 @@ class DashboardViewModel(
             waterTargetMl = data.waterGoal?.dailyTargetMl ?: WaterGoal.DEFAULT_DAILY_TARGET_ML,
             topGoals = activeGoals(goals).take(DASHBOARD_GOALS).map { it.toItem(date) },
             totalActiveGoals = activeGoals(goals).size,
+            diaryWrittenToday = data.diaryEntries.any { it.date == date },
+            diaryStreak = DiaryStreak.current(
+                data.diaryEntries.mapTo(mutableSetOf()) { it.date },
+                date,
+            ),
         )
     }.stateIn(
         scope = viewModelScope,

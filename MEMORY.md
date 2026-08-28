@@ -222,6 +222,30 @@ Encoded in `GoalProgress`, pinned by `GoalProgressTest`:
 - That leaves the outer combine at 3 of its 5 slots, with room for diary in milestone 8. Diary *is* day-scoped, so it belongs in `DayData`.
 - The `Goal → GoalItem` mapping is shared: `goal/viewmodel/toItem(today)` is used by both the goal screen and the dashboard, so progress and deadline maths cannot drift between them.
 
+### 2026-08-28 (session 8) — Diary prefill never auto-saves
+- PRD 7.7 wants the entry "auto-prefilled" with a summary line. The obvious implementation — write the summary into the entry — would have created a **junk entry for every day the user merely opened the diary**, which would silently inflate the diary streak and pollute the calendar.
+- Implementation: the text field is seeded with the summary **in the draft only**, and nothing is persisted until Save is pressed. Opening the diary and walking away stores nothing.
+- The summary returns **null when nothing was tracked**, so a genuinely empty day gets a blank page rather than a line of zeroes.
+- Save is disabled on blank text, so an entry cannot be created empty.
+
+### 2026-08-28 (session 8) — Diary streak matches the habit grace rule
+- Not having written **today** does not break the streak (the day is not over); missing **yesterday** does. Identical to `HabitSchedule`'s rule, deliberately — two different streak rules in one app would be confusing.
+- Future-dated entries cannot inflate the streak, and `selectDate` refuses future dates outright.
+- Pinned by `DiaryStreakTest`.
+
+### 2026-08-28 (session 8) — The calendar is hand-built, not a DatePicker
+- Material 3's `DatePicker` is a *picker*, not a browser: it cannot mark which days have entries, which is the entire point of PRD 7.7's calendar view.
+- `diary/ui/MonthCalendar.kt` is a plain month grid — Monday-first (matching habit weeks), entry days tinted, today bold, future days visible but not clickable.
+
+### 2026-08-28 (session 8) — The diary depends on every other repository
+- `DiaryViewModel` takes the habit, expense, water and calorie repositories, because PRD 7.7's summary line quotes all of them.
+- It **reuses those repositories rather than adding its own queries**, so the numbers in the diary can never disagree with the numbers on the tracker screens.
+- This is the one intentional cross-feature dependency in the app. If another feature starts wanting the same aggregate, extract it — do not copy the assembly logic.
+
+### 2026-08-28 (session 8) — Dashboard is now feature-complete for PRD 7.1
+- All six sections exist: habits, water (with quick-add), calories, spend, goals, diary.
+- `refreshDate` on the diary only follows the clock past midnight **if the user was looking at today** — otherwise it would yank them off a past date they were deliberately reading.
+
 ---
 
 ## Known Gotchas / Things to Watch

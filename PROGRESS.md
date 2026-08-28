@@ -11,7 +11,7 @@ Check the box when a milestone is fully working end-to-end (not just started).
 - [x] 5. Calorie tracker + dashboard integration
 - [x] 6. Water tracker + dashboard integration
 - [x] 7. Goal tracker + dashboard integration
-- [ ] 8. Diary + dashboard integration
+- [x] 8. Diary + dashboard integration
 - [ ] 9. Notification system (WorkManager, consolidated daily check)
 - [ ] 10. Settings screen
 - [ ] 11. Polish (theming, empty states, animations, dark mode)
@@ -20,6 +20,44 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ---
 
 ## Session Log
+
+### Session 8 — 2026-08-28
+**Milestone 8 complete.** Diary, and with it the PRD 7.1 dashboard is fully populated.
+
+**Done this session:**
+- `DiaryStreak` + `DaySummary` as pure, testable logic.
+- `DiaryRepository` — the upsert carries the existing row's id, so saving twice in a day updates rather than colliding with the unique-date index.
+- `DiaryViewModel` — the one component that reads from **every** other tracker, because PRD 7.7's summary line quotes them.
+- `DiaryScreen`: streak header, month calendar, 5 emoji moods, text editor, save and delete.
+- `MonthCalendar` — hand-built month grid marking which days have entries. Material 3's `DatePicker` can't do that, and that is the whole point of the view.
+- **Auto-prefilled summary line** ("3/4 habits done, ₹450 spent, 1.8L water") seeded into the draft only.
+- **Dashboard diary card** with streak and a "write today's entry" prompt.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, **zero warnings**, clean first attempt.
+- **55/55 unit tests pass** (16 habit + 9 expense + 5 calorie + 6 water + 11 goal + 8 new diary), via `--rerun-tasks`.
+- String resources audited — three unused strings removed.
+
+**The trap avoided, worth knowing about:**
+- Implementing "auto-prefilled" literally — writing the summary into the entry — would have created a **junk diary entry for every day the diary was merely opened**, silently inflating the diary streak and filling the calendar with entries the user never wrote. The prefill lives in the draft only and nothing persists until Save.
+
+**Decisions recorded in MEMORY.md:**
+- Prefill never auto-saves; the summary is null when nothing was tracked.
+- Diary streak uses the same grace rule as habits — deliberately identical.
+- The calendar is hand-built, and why.
+- The diary reuses other repositories rather than adding queries, so its numbers can't disagree with the tracker screens.
+
+**Known issues / things to watch:**
+- All version pins from session 1 still apply.
+- Calorie and water target dialogs still duplicate what Settings will own in milestone 10.
+- The dashboard now has six cards. It scrolls, which is fine since you relaxed that constraint, but the ordering has never been judged on a real screen.
+
+**Next up — Milestone 9: Notification system (WorkManager)**
+1. **One consolidated daily digest, never per-tracker spam** — this is an explicit product requirement (PRD 7.8, and flagged in MEMORY.md since session 0). Do not add per-event notifications.
+2. `notification_settings` is already seeded with the six default reminder rows from PRD 7.8, including water's two times.
+3. Reuse `GoalProgress.isDeadlineNear(3)` — the deadline window is already implemented and tested.
+4. Needs `POST_NOTIFICATIONS` (API 33+) and a runtime permission request — the first permission this app has asked for.
+5. WorkManager is already a dependency and its manifest entries are already merged in.
 
 ### Session 7 — 2026-08-28
 **Milestone 7 complete.** Goal tracker plus dashboard integration. Also relaxed the no-scrolling constraint.

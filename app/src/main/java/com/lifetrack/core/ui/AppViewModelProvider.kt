@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.lifetrack.LifeTrackApplication
 import com.lifetrack.dashboard.viewmodel.DashboardViewModel
 import com.lifetrack.calorie.viewmodel.CalorieViewModel
+import com.lifetrack.diary.viewmodel.DiaryViewModel
 import com.lifetrack.expense.viewmodel.ExpenseViewModel
 import com.lifetrack.goal.viewmodel.GoalViewModel
 import com.lifetrack.habit.viewmodel.HabitViewModel
@@ -23,6 +24,7 @@ object AppViewModelProvider {
                 calorieRepository = lifeTrackApplication().container.calorieRepository,
                 waterRepository = lifeTrackApplication().container.waterRepository,
                 goalRepository = lifeTrackApplication().container.goalRepository,
+                diaryRepository = lifeTrackApplication().container.diaryRepository,
             )
         }
         initializer { HabitViewModel(lifeTrackApplication().container.habitRepository) }
@@ -30,6 +32,16 @@ object AppViewModelProvider {
         initializer { CalorieViewModel(lifeTrackApplication().container.calorieRepository) }
         initializer { WaterViewModel(lifeTrackApplication().container.waterRepository) }
         initializer { GoalViewModel(lifeTrackApplication().container.goalRepository) }
+        initializer {
+            val container = lifeTrackApplication().container
+            DiaryViewModel(
+                diaryRepository = container.diaryRepository,
+                habitRepository = container.habitRepository,
+                expenseRepository = container.expenseRepository,
+                waterRepository = container.waterRepository,
+                calorieRepository = container.calorieRepository,
+            )
+        }
     }
 }
 

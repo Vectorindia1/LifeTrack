@@ -113,6 +113,8 @@ private fun DashboardContent(
             item { GoalsCard(uiState = uiState, onOpen = onOpen) }
         }
 
+        item { DiaryCard(uiState = uiState, onOpen = onOpen) }
+
         // Goals, Calories and Water have no bottom-bar tab, so this row is their
         // only way in until milestones 5-7 give them real dashboard sections.
         item { MoreTrackers(onOpen = onOpen) }
@@ -369,6 +371,53 @@ private fun SpentTodayCard(
                 Text(
                     text = stringResource(R.string.dashboard_spent_none),
                     style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+/** PRD 7.1's diary streak indicator and "write today's entry" prompt. */
+@Composable
+private fun DiaryCard(
+    uiState: DashboardUiState,
+    onOpen: (Destination) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(
+        onClick = { onOpen(Destination.Diary) },
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.dashboard_diary_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = if (uiState.diaryWrittenToday) {
+                        stringResource(R.string.dashboard_diary_done)
+                    } else {
+                        stringResource(R.string.dashboard_diary_prompt)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (uiState.diaryWrittenToday) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
+            if (uiState.diaryStreak > 0) {
+                Text(
+                    text = "🔥 ${uiState.diaryStreak}",
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

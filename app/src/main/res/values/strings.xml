@@ -16,7 +16,6 @@
 
     <!-- Milestone-1 placeholder scaffolding -->
     <string name="placeholder_coming_in_milestone">Coming in milestone %1$d</string>
-    <string name="placeholder_diary_body">One entry a day, a mood tag, and a calendar to look back.</string>
     <string name="placeholder_settings_body">Daily targets, reminder times, habit and category management.</string>
 
     <!-- Habit tracker (milestone 2) -->
@@ -163,4 +162,24 @@
     <!-- Dashboard goals section -->
     <string name="dashboard_goals_title">Goals</string>
     <string name="dashboard_goals_see_all">See all</string>
+    <!-- Diary (milestone 8) -->
+    <string name="diary_title">Diary</string>
+    <string name="diary_today">Today</string>
+    <string name="diary_placeholder">How was today?</string>
+    <string name="diary_save">Save</string>
+    <string name="diary_delete">Delete entry</string>
+    <string name="diary_mood_label">Mood</string>
+    <string name="diary_streak">%1$d day streak</string>
+    <string name="diary_streak_none">No streak yet</string>
+    <string name="diary_summary_habits">%1$d/%2$d habits done</string>
+    <string name="diary_summary_spent">%1$s spent</string>
+    <string name="diary_summary_water">%1$s water</string>
+    <string name="diary_summary_calories">%1$d kcal</string>
+    <string name="diary_prev_month">Previous month</string>
+    <string name="diary_next_month">Next month</string>
+
+    <!-- Dashboard diary section -->
+    <string name="dashboard_diary_title">Diary</string>
+    <string name="dashboard_diary_prompt">Write today\'s entry</string>
+    <string name="dashboard_diary_done">Written today</string>
 </resources>
