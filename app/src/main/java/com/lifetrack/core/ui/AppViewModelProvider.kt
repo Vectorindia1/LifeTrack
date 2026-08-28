@@ -12,7 +12,7 @@ import com.lifetrack.habit.viewmodel.HabitViewModel
 object AppViewModelProvider {
 
     val Factory = viewModelFactory {
-        initializer { DashboardViewModel(lifeTrackApplication().container) }
+        initializer { DashboardViewModel(lifeTrackApplication().container.habitRepository) }
         initializer { HabitViewModel(lifeTrackApplication().container.habitRepository) }
     }
 }

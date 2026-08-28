@@ -13,11 +13,9 @@
 
     <!-- Dashboard -->
     <string name="dashboard_title">Today</string>
-    <string name="dashboard_open">Open</string>
 
     <!-- Milestone-1 placeholder scaffolding -->
     <string name="placeholder_coming_in_milestone">Coming in milestone %1$d</string>
-    <string name="placeholder_habits_body">Add habits, tick them off daily, watch the streak build.</string>
     <string name="placeholder_goals_body">Set a target, nudge the number up, see the deadline coming.</string>
     <string name="placeholder_expenses_body">Amount, category, done. Totals and a breakdown by category.</string>
     <string name="placeholder_calories_body">Log food and calories against a daily target.</string>
@@ -25,12 +23,6 @@
     <string name="placeholder_diary_body">One entry a day, a mood tag, and a calendar to look back.</string>
     <string name="placeholder_settings_body">Daily targets, reminder times, habit and category management.</string>
 
-    <!-- Database status card (temporary: replaced by the real dashboard in milestone 3) -->
-    <string name="db_status_title">Database</string>
-    <string name="db_status_ready">Room is live — %1$d tables, seeded and readable.</string>
-    <string name="db_status_loading">Opening database…</string>
-    <string name="db_status_detail">Habits %1$d · Goals %2$d · Expenses %3$d · Diary %4$d</string>
-    <string name="db_status_targets">Targets: %1$d kcal · %2$d ml water</string>
     <!-- Habit tracker (milestone 2) -->
     <string name="habit_add">Add habit</string>
     <string name="habit_add_title">New habit</string>
@@ -64,4 +56,13 @@
     <string name="day_fri">F</string>
     <string name="day_sat">S</string>
     <string name="day_sun">S</string>
+    <!-- Dashboard v1 (milestone 3) -->
+    <string name="dashboard_habits_title">Habits</string>
+    <string name="dashboard_habits_count">%1$d of %2$d</string>
+    <string name="dashboard_all_done">All done today. Nice.</string>
+    <string name="dashboard_nothing_due">Nothing due today.</string>
+    <string name="dashboard_no_habits_title">Start with one habit</string>
+    <string name="dashboard_no_habits_body">Pick one thing you want to do regularly. You can tick it off right here.</string>
+    <string name="dashboard_add_habit">Add a habit</string>
+    <string name="dashboard_more">More trackers</string>
 </resources>

@@ -121,6 +121,22 @@ The 1.x/2.x examples online do not compile. What works, confirmed by compiling a
 - **Tip for future sessions:** rather than guessing the API, read it off the artifact —
   `unzip -p <compose>.aar classes.jar > c.jar && unzip -q c.jar && javap -public <Class>.class`.
 
+### 2026-08-28 (session 3) — Dashboard shows only habits *due today*
+- The dashboard lists habits where `HabitSchedule.isScheduledOn(habit, today)` is true, not every habit.
+- A Mon/Wed/Fri habit simply is not on Tuesday's dashboard. Showing it greyed out would add noise to the one screen PRD 7.1 insists must be readable at a glance.
+- Consequence to remember: the dashboard's "2 of 3" counter is over *due* habits, so it can differ from the total habit count. That is intended.
+- Weekly habits are due every day (any day can satisfy the weekly target), so they always appear.
+
+### 2026-08-28 (session 3) — `today` is reactive state in ViewModels, not a captured constant
+- Both `DashboardViewModel` and `HabitViewModel` hold `today` in a `MutableStateFlow` and expose `refreshDate()`, which the screens call from `LifecycleResumeEffect`.
+- **Why:** a ViewModel that captured `LocalDate.now()` once would keep showing yesterday for an app left open across midnight — and this app is specifically meant to be opened briefly and often, including late at night.
+- The completions query is keyed off that flow with `flatMapLatest`, so the whole state recomputes for the new day.
+- Anything added later that needs "today" should follow this pattern rather than calling `LocalDate.now()` inline.
+
+### 2026-08-28 (session 3) — The milestone-1 database status card is gone
+- `DashboardScreen`'s temporary "Room is live — 10 tables" card and its `db_status_*` strings were deleted, as planned when it was written.
+- **It was never seen running.** It was the intended runtime proof that Room opens and seeds, and no device was ever available to display it. That proof is now folded into the real dashboard: if habits appear and a tick persists, Room works.
+
 ---
 
 ## Known Gotchas / Things to Watch

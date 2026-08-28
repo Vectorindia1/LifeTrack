@@ -6,7 +6,7 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ## Milestone Checklist (from PRD section 10)
 - [x] 1. Project scaffold + Room DB + navigation shell
 - [x] 2. Habit tracker (add/log/streak/chart)
-- [ ] 3. Dashboard v1 (habits only)
+- [x] 3. Dashboard v1 (habits only)
 - [ ] 4. Expense tracker + dashboard integration
 - [ ] 5. Calorie tracker + dashboard integration
 - [ ] 6. Water tracker + dashboard integration
@@ -20,6 +20,42 @@ Check the box when a milestone is fully working end-to-end (not just started).
 ---
 
 ## Session Log
+
+### Session 3 — 2026-08-28
+**Milestone 3 complete.** Dashboard v1, plus the repo is finally under version control.
+
+**Done this session:**
+- **`git init`.** Two commits: the original specs, then milestones 1–2 as one commit (the repo did not exist while that work happened). Milestone 3 is its own commit. `local.properties` and build output are correctly ignored.
+- `DashboardViewModel` rewritten around `HabitRepository`: today's due habits, done/due counts, and a one-tap toggle.
+- `DashboardScreen` replaces the temporary database card with the real PRD 7.1 habit section — date header, per-habit checkbox rows with streak flames, an all-done note, a first-habit prompt when empty, and chips into Goals/Calories/Water.
+- **Logging a habit from the dashboard is now one tap**, satisfying PRD section 8's ≤2-tap rule for the first time.
+- **Fixed the stale-date bug** flagged last session: `today` is now reactive state in both dashboard and habit ViewModels, refreshed on resume, so an app left open across midnight rolls over.
+- Habit checkboxes now carry accessible labels (they were unlabelled controls next to separate text).
+- Removed the `db_status_*` strings and two other strings that went dead.
+
+**Verified:**
+- `./gradlew assembleDebug testDebugUnitTest` → **BUILD SUCCESSFUL**, 16/16 tests still passing, **zero compiler warnings**.
+- Checked for stale string resources in both directions: nothing referenced-but-missing, nothing dead left behind.
+
+**Still not verified:**
+- **The app has never been run — three milestones in.** No emulator or device has been available in any session. Room has never opened at runtime, no Compose screen has ever been rendered, and the Vico chart has never been drawn.
+- This is now the single biggest risk in the project. Everything is compile-correct and the pure logic is test-correct, but nothing is *runtime*-correct. Worth installing before milestone 4 adds more on top.
+
+**Decisions recorded in MEMORY.md:**
+- The dashboard lists only habits *due today*, so its counter is over due habits, not all habits.
+- `today` is reactive state, never a captured constant — the pattern to follow for anything date-based later.
+- The milestone-1 database card is gone; its runtime-proof role passes to the real dashboard.
+
+**Known issues / things to watch:**
+- Version pins from session 1 still apply (API 37 unavailable; JDK path pinned in `gradle.properties`).
+- The dashboard's "More trackers" chips exist because Goals/Calories/Water have no bottom-bar tab. When milestones 5–7 give them real dashboard sections, that row should probably go.
+
+**Next up — Milestone 4: Expense tracker + dashboard integration**
+1. `ExpenseRepository` + `ExpenseViewModel` over the existing DAO.
+2. Quick-add: amount + category, in as few taps as possible.
+3. Daily/weekly/monthly totals; bar chart by category and line chart over time (second and third Vico charts).
+4. Today's spend total on the dashboard, per PRD 7.1.
+5. **Decision needed:** PRD 11 asks whether expense categories are presets-only or user-definable. The schema keeps `category` a plain String so either works — this is the milestone where it has to be decided.
 
 ### Session 2 — 2026-08-28
 **Milestone 2 complete.** Habit tracker is a full vertical slice: add → log → streak → chart.

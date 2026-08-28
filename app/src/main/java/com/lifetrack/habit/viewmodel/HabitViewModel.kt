@@ -6,10 +6,12 @@ import com.lifetrack.habit.data.FrequencyType
 import com.lifetrack.habit.data.Habit
 import com.lifetrack.habit.data.HabitRepository
 import com.lifetrack.habit.data.HabitSchedule
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -39,18 +41,20 @@ data class HabitUiState(
     val isEmpty: Boolean get() = !isLoading && items.isEmpty()
 }
 
-class HabitViewModel(
-    private val repository: HabitRepository,
-    private val today: LocalDate = LocalDate.now(),
-) : ViewModel() {
+@OptIn(ExperimentalCoroutinesApi::class)
+class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
 
     private val chartWindow = MutableStateFlow(ChartWindow.WEEKS)
 
+    /** State, not a captured constant, so crossing midnight is handled. See [refreshDate]. */
+    private val todayFlow = MutableStateFlow(LocalDate.now())
+
     val uiState: StateFlow<HabitUiState> = combine(
         repository.observeHabits(),
-        repository.observeRecentCompletions(today),
+        todayFlow.flatMapLatest { repository.observeRecentCompletions(it) },
         chartWindow,
-    ) { habits, logs, window ->
+        todayFlow,
+    ) { habits, logs, window, today ->
         val completedByHabit: Map<Long, Set<LocalDate>> = logs
             .groupBy { it.habitId }
             .mapValues { (_, entries) -> entries.mapTo(mutableSetOf()) { it.date } }
@@ -69,7 +73,7 @@ class HabitViewModel(
             isLoading = false,
             items = items,
             chartWindow = window,
-            bars = buildBars(habits, completedByHabit, window),
+            bars = buildBars(habits, completedByHabit, window, today),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -81,6 +85,7 @@ class HabitViewModel(
         habits: List<Habit>,
         completedByHabit: Map<Long, Set<LocalDate>>,
         window: ChartWindow,
+        today: LocalDate,
     ): List<RateBar> {
         if (habits.isEmpty()) return emptyList()
         val ranges = when (window) {
@@ -105,6 +110,12 @@ class HabitViewModel(
         }
     }
 
+    /** Call when the screen resumes, so the date is right after midnight. */
+    fun refreshDate() {
+        val now = LocalDate.now()
+        if (now != todayFlow.value) todayFlow.value = now
+    }
+
     fun setChartWindow(window: ChartWindow) {
         chartWindow.value = window
     }
@@ -112,7 +123,7 @@ class HabitViewModel(
     /** One tap from the checklist. Writes the log, then refreshes the cached streak. */
     fun toggle(item: HabitItem) {
         viewModelScope.launch {
-            repository.setCompleted(item.habit.id, today, !item.isDoneToday)
+            repository.setCompleted(item.habit.id, todayFlow.value, !item.isDoneToday)
         }
     }
 
